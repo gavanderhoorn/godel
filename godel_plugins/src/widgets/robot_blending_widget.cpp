@@ -138,12 +138,6 @@ void RobotBlendingWidget::init()
 
   // Move to first tab
   ui_.TabWidgetCreateLib->setCurrentIndex(0);
-  ROS_INFO_STREAM("Current Index " << ui_.TabWidgetCreateLib->currentIndex());
-  
-  // Setup timer
-  QTimer* timer = new QTimer(this);
-  connect(timer, SIGNAL(timeout()), this, SLOT(update_handler()));
-  timer->start(4000);
 
   // Connect to services from a separate thread
   QtConcurrent::run(this, &RobotBlendingWidget::connect_to_services);
@@ -160,12 +154,13 @@ void RobotBlendingWidget::connect_to_services()
   Q_EMIT connect_started();
 
   // wait for services to connect
+  static const ros::Duration service_timeout(5.0); // 5.0 seconds
   while (ros::ok())
   {
     ROS_INFO_STREAM("rviz blending panel connecting to services");
-    if (surface_detection_client_.waitForExistence(ros::Duration(2)) &&
-        select_surface_client_.waitForExistence(ros::Duration(2)) &&
-        surface_blending_parameters_client_.waitForExistence(ros::Duration(2)))
+    if (surface_detection_client_.waitForExistence(service_timeout) &&
+        select_surface_client_.waitForExistence(service_timeout) &&
+        surface_blending_parameters_client_.waitForExistence(service_timeout))
     {
 
       ROS_INFO_STREAM("rviz panel connected to the services '"
@@ -658,7 +653,6 @@ void RobotBlendingWidget::request_save_parameters()
   godel_msgs::SurfaceBlendingParameters::Request req;
   req.action = godel_msgs::SurfaceBlendingParameters::Request::SAVE_PARAMETERS;
   req.surface_detection = surface_detect_config_window_->params();
-//  req.path_params = path_planning_config_window_->params();
   req.blending_plan = blend_plan_config_window_->params();
   req.robot_scan = robot_scan_config_window_->params();
   req.scan_plan = scan_plan_config_window_->params();

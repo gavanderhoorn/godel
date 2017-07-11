@@ -150,7 +150,6 @@ protected Q_SLOTS:
 protected:
   Ui::RobotBlendingWidget ui_;
   RobotScanConfigWidget* robot_scan_config_window_;
-//  PathPlanningConfigWidget* path_planning_config_window_;
   BlendPlanConfigWidget* blend_plan_config_window_;
   SurfaceDetectionConfigWidget* surface_detect_config_window_;
   ScanPlanConfigWidget* scan_plan_config_window_;
@@ -170,7 +169,6 @@ protected:
   std::string param_ns_;
   godel_msgs::RobotScanParameters robot_scan_parameters_;
   godel_msgs::SurfaceDetectionParameters surf_detect_parameters_;
-//  godel_msgs::PathPlanningParameters path_planning_parameters_;
   godel_msgs::BlendingPlanParameters blend_plan_parameters_;
   godel_msgs::ScanPlanParameters scan_plan_parameters_;
   godel_msgs::SurfaceDetection::Response latest_result_;
