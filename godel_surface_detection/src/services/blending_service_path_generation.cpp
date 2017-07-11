@@ -316,8 +316,7 @@ SurfaceBlendingService::generateProcessPath(const int& id,
   return result.paths.size() > 0;
 }
 
-godel_surface_detection::TrajectoryLibrary SurfaceBlendingService::generateMotionLibrary(
-    const godel_msgs::PathPlanningParameters& params)
+godel_surface_detection::TrajectoryLibrary SurfaceBlendingService::generateMotionLibrary(const godel_msgs::BlendingPlanParameters& blend_params, const godel_msgs::ScanPlanParameters& scan_params)
 {
   SWRI_PROFILE("generate-motion-library");
   std::vector<int> selected_ids;
@@ -355,35 +354,37 @@ godel_surface_detection::TrajectoryLibrary SurfaceBlendingService::generateMotio
         ROS_ERROR_STREAM("Tried to process an unrecognized path type: " << vt.first);
     }
 
-    ros::NodeHandle nh;
+//    ros::NodeHandle nh;
 
-    godel_msgs::BlendingPlanParameters blend_params;
-    blend_params.margin = params.margin;
-    blend_params.overlap = params.overlap;
-    blend_params.tool_radius = params.tool_radius;
-    blend_params.discretization = params.discretization;
-    blend_params.safe_traverse_height = params.traverse_height;
-    nh.getParam(SPINDLE_SPEED_PARAM, blend_params.spindle_speed);
-    nh.getParam(APPROACH_SPD_PARAM, blend_params.approach_spd);
-    nh.getParam(BLENDING_SPD_PARAM, blend_params.blending_spd);
-    nh.getParam(RETRACT_SPD_PARAM, blend_params.retract_spd);
-    nh.getParam(TRAVERSE_SPD_PARAM, blend_params.traverse_spd);
-    nh.getParam(Z_ADJUST_PARAM, blend_params.z_adjust);
+    ROS_INFO_STREAM("**BLEND_PARAMS**\n" << blend_params);
+    ROS_INFO_STREAM("**SCAN_PARAMS**\n" << scan_params);
+//    godel_msgs::BlendingPlanParameters blend_params;
+//    blend_params.margin = blend_params.margin;
+//    blend_params.overlap = blend_params.overlap;
+//    blend_params.tool_radius = blend_params.tool_radius;
+//    blend_params.discretization = blend_params.discretization;
+//    blend_params.safe_traverse_height = blend_params.traverse_height;
+//    nh.getParam(SPINDLE_SPEED_PARAM, blend_params.spindle_speed);
+//    nh.getParam(APPROACH_SPD_PARAM, blend_params.approach_spd);
+//    nh.getParam(BLENDING_SPD_PARAM, blend_params.blending_spd);
+//    nh.getParam(RETRACT_SPD_PARAM, blend_params.retract_spd);
+//    nh.getParam(TRAVERSE_SPD_PARAM, blend_params.traverse_spd);
+//    nh.getParam(Z_ADJUST_PARAM, blend_params.z_adjust);
 
-    godel_msgs::ScanPlanParameters scan_params;
-    scan_params.scan_width = params.scan_width;
-    scan_params.margin = params.margin;
-    scan_params.overlap = params.overlap;
-    scan_params.scan_width = params.scan_width;
-    nh.getParam(APPROACH_DISTANCE_PARAM, scan_params.approach_distance);
-    nh.getParam(TRAVERSE_SPD_PARAM, scan_params.traverse_spd);
-    nh.getParam(QUALITY_METRIC_PARAM, scan_params.quality_metric);
-    nh.getParam(WINDOW_WIDTH_PARAM, scan_params.window_width);
-    nh.getParam(MIN_QA_VALUE_PARAM, scan_params.min_qa_value);
-    nh.getParam(MAX_QA_VALUE_PARAM, scan_params.min_qa_value);
-//    nh.getParam(Z_ADJUST_PARAM, scan_params.z_adjust);
-    scan_params.z_adjust = 0.0; // Until we fix these parameters and do not share them among the
-                                // different processes, I'm only applying this to blend paths.
+//    godel_msgs::ScanPlanParameters scan_params;
+//    scan_params.scan_width = blend_params.scan_width;
+//    scan_params.margin = blend_params.margin;
+//    scan_params.overlap = blend_params.overlap;
+//    scan_params.scan_width = blend_params.scan_width;
+//    nh.getParam(APPROACH_DISTANCE_PARAM, scan_params.approach_distance);
+//    nh.getParam(TRAVERSE_SPD_PARAM, scan_params.traverse_spd);
+//    nh.getParam(QUALITY_METRIC_PARAM, scan_params.quality_metric);
+//    nh.getParam(WINDOW_WIDTH_PARAM, scan_params.window_width);
+//    nh.getParam(MIN_QA_VALUE_PARAM, scan_params.min_qa_value);
+//    nh.getParam(MAX_QA_VALUE_PARAM, scan_params.min_qa_value);
+////    nh.getParam(Z_ADJUST_PARAM, scan_params.z_adjust);
+//    scan_params.z_adjust = 0.0; // Until we fix these parameters and do not share them among the
+//                                // different processes, I'm only applying this to blend paths.
 
     // Generate trajectory plans from motion plan
     {

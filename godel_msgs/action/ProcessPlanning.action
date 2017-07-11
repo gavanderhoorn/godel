@@ -5,8 +5,9 @@ int32 PREVIEW_TOOL_PATH=2
 int32 action
 
 bool use_default_parameters
-godel_msgs/PathPlanningParameters params
-godel_msgs/SurfaceBoundaries surface
+
+godel_msgs/BlendingPlanParameters blend_params
+godel_msgs/ScanPlanParameters scan_params
 
 ---
 

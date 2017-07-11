@@ -48,7 +48,7 @@ RobotBlendingWidget::~RobotBlendingWidget()
 {
   delete robot_scan_config_window_;
   delete surface_detect_config_window_;
-  delete path_planning_config_window_;
+  delete blend_plan_config_window_;
   delete scan_plan_config_window_;
 }
 
@@ -76,7 +76,7 @@ void RobotBlendingWidget::init()
   // Initialize config windows
   robot_scan_config_window_ = new RobotScanConfigWidget(robot_scan_parameters_);
   surface_detect_config_window_ = new SurfaceDetectionConfigWidget(surf_detect_parameters_);
-  path_planning_config_window_ = new PathPlanningConfigWidget(path_planning_parameters_);
+  blend_plan_config_window_ = new BlendPlanConfigWidget(blend_plan_parameters_); //new PathPlanningConfigWidget(path_planning_parameters_);
   scan_plan_config_window_ = new ScanPlanConfigWidget(scan_plan_parameters_);
 
 
@@ -125,7 +125,7 @@ void RobotBlendingWidget::init()
   connect(surface_detect_config_window_, SIGNAL(parameters_save_requested()), this, SLOT(request_save_parameters()));
   connect(robot_scan_config_window_, SIGNAL(parameters_changed()), this, SLOT(robot_scan_params_changed_handler()));
   connect(robot_scan_config_window_, SIGNAL(parameters_save_requested()), this, SLOT(request_save_parameters()));
-  connect(path_planning_config_window_, SIGNAL(parameters_save_requested()), this, SLOT(request_save_parameters()));
+  connect(blend_plan_config_window_, SIGNAL(parameters_save_requested()), this, SLOT(request_save_parameters()));
   connect(scan_plan_config_window_, SIGNAL(parameters_save_requested()), this, SLOT(request_save_parameters()));
   connect(surface_detect_config_window_, SIGNAL(parameters_changed()), this,
           SLOT(surface_detect_params_changed_handler()));
@@ -175,13 +175,13 @@ void RobotBlendingWidget::connect_to_services()
       // requesting parameters
       if (surface_blending_parameters_client_.call(msg.request, msg.response))
       {
-        robot_scan_config_window_->params() = msg.response.robot_scan;
-        surface_detect_config_window_->params() = msg.response.surface_detection;
         robot_scan_parameters_ = msg.response.robot_scan;
         surf_detect_parameters_ = msg.response.surface_detection;
-        //blending_plan_parameters_ = msg.response.blending_plan;
-        path_planning_parameters_ = msg.response.path_params;
-        path_planning_config_window_->params() = msg.response.path_params;
+        blend_plan_parameters_ = msg.response.blending_plan;
+
+        robot_scan_config_window_->params() = msg.response.robot_scan;
+        surface_detect_config_window_->params() = msg.response.surface_detection;
+        blend_plan_config_window_->params() = msg.response.blending_plan;
         scan_plan_config_window_->params() = msg.response.scan_plan;
 
         // update gui elements for robot scan
@@ -299,7 +299,7 @@ void RobotBlendingWidget::scan_options_click_handler()
 
 void RobotBlendingWidget::path_planning_options_click_handler()
 {
-  path_planning_config_window_->show();
+  blend_plan_config_window_->show();
 }
 
 
@@ -476,7 +476,8 @@ void RobotBlendingWidget::generate_process_path_handler()
 
   godel_msgs::ProcessPlanningActionGoal goal;
   goal.goal.use_default_parameters = false;
-  goal.goal.params = path_planning_config_window_->params();
+  goal.goal.scan_params = scan_plan_config_window_->params();
+  goal.goal.blend_params = blend_plan_config_window_->params();
   goal.goal.action = goal.goal.GENERATE_MOTION_PLAN_AND_PREVIEW;
   process_planning_action_client_.sendGoal(
         goal.goal,
@@ -657,7 +658,8 @@ void RobotBlendingWidget::request_save_parameters()
   godel_msgs::SurfaceBlendingParameters::Request req;
   req.action = godel_msgs::SurfaceBlendingParameters::Request::SAVE_PARAMETERS;
   req.surface_detection = surface_detect_config_window_->params();
-  req.path_params = path_planning_config_window_->params();
+//  req.path_params = path_planning_config_window_->params();
+  req.blending_plan = blend_plan_config_window_->params();
   req.robot_scan = robot_scan_config_window_->params();
   req.scan_plan = scan_plan_config_window_->params();
 

@@ -39,6 +39,7 @@
 #include <godel_plugins/widgets/robot_scan_configuration.h>
 #include <godel_plugins/widgets/path_planning_param_window.h>
 #include <godel_plugins/widgets/scan_tool_configuration_window.h>
+#include <godel_plugins/widgets/blend_plan_config_widget.h>
 
 // macros
 #ifndef DEG2RAD
@@ -149,7 +150,8 @@ protected Q_SLOTS:
 protected:
   Ui::RobotBlendingWidget ui_;
   RobotScanConfigWidget* robot_scan_config_window_;
-  PathPlanningConfigWidget* path_planning_config_window_;
+//  PathPlanningConfigWidget* path_planning_config_window_;
+  BlendPlanConfigWidget* blend_plan_config_window_;
   SurfaceDetectionConfigWidget* surface_detect_config_window_;
   ScanPlanConfigWidget* scan_plan_config_window_;
 
@@ -168,7 +170,8 @@ protected:
   std::string param_ns_;
   godel_msgs::RobotScanParameters robot_scan_parameters_;
   godel_msgs::SurfaceDetectionParameters surf_detect_parameters_;
-  godel_msgs::PathPlanningParameters path_planning_parameters_;
+//  godel_msgs::PathPlanningParameters path_planning_parameters_;
+  godel_msgs::BlendingPlanParameters blend_plan_parameters_;
   godel_msgs::ScanPlanParameters scan_plan_parameters_;
   godel_msgs::SurfaceDetection::Response latest_result_;
   godel_msgs::SurfaceDetection::Request latest_request_;

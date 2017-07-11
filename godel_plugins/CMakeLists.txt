@@ -23,6 +23,7 @@ set(godel_plugins_SRCS
   src/widgets/surface_detection_configuration.cpp
   src/widgets/robot_scan_configuration.cpp
   src/widgets/scan_tool_configuration_window.cpp
+  src/widgets/blend_plan_config_widget.cpp
 )
 
 set(godel_plugins_HDRS
@@ -34,6 +35,7 @@ set(godel_plugins_HDRS
   include/godel_plugins/widgets/surface_detection_configuration.h
   include/godel_plugins/widgets/robot_scan_configuration.h
   include/godel_plugins/widgets/scan_tool_configuration_window.h
+  include/godel_plugins/widgets/blend_plan_config_widget.h
 )
 
 set(godel_plugins_UIS
@@ -43,6 +45,7 @@ set(godel_plugins_UIS
   src/widgets/surface_detection_configuration.ui
   src/widgets/path_planning_param_window.ui
   src/widgets/scan_tool_configuration_window.ui
+  src/widgets/blend_plan_config_widget.ui
 )
 
 set(godel_plugins_INCLUDE_DIRECTORIES

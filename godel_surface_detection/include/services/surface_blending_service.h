@@ -133,7 +133,7 @@ private:
 
   // Reads from the surface selection server and generates blend/scan paths for each
   godel_surface_detection::TrajectoryLibrary
-  generateMotionLibrary(const godel_msgs::PathPlanningParameters& params);
+  generateMotionLibrary(const godel_msgs::BlendingPlanParameters& blend_params, const godel_msgs::ScanPlanParameters& scan_params);
 
 
   bool generateProcessPath(const int& id, ProcessPathResult& result);

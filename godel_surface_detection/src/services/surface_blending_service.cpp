@@ -564,7 +564,7 @@ void SurfaceBlendingService::processPlanningActionCallback(const godel_msgs::Pro
       ensenso::EnsensoGuard guard; // turns off ensenso for planning and turns it on when this goes out of scope
       process_planning_feedback_.last_completed = "Recieved request to generate motion plan";
       process_planning_server_.publishFeedback(process_planning_feedback_);
-      trajectory_library_ = generateMotionLibrary(goal_in->params);
+      trajectory_library_ = generateMotionLibrary(goal_in->blend_params, goal_in->scan_params);
       process_planning_feedback_.last_completed = "Finished planning. Visualizing...";
       process_planning_server_.publishFeedback(process_planning_feedback_);
       visualizePaths();
