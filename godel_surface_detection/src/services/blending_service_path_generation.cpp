@@ -316,6 +316,58 @@ SurfaceBlendingService::generateProcessPath(const int& id,
   return result.paths.size() > 0;
 }
 
+static void uploadParameters(const godel_msgs::BlendingPlanParameters& blend_params,
+                             const godel_msgs::ScanPlanParameters& scan_params)
+{
+  ros::NodeHandle nh;
+
+  const static std::string PARAM_BASE = "/process_planning_params/";
+  const static std::string SCAN_PARAM_BASE = "scan_params/";
+  const static std::string BLEND_PARAM_BASE = "blend_params/";
+
+  const static std::string SPINDLE_SPD_PARAM = PARAM_BASE + BLEND_PARAM_BASE + "spindle_speed";
+
+  const static std::string APPROACH_SPD_PARAM = PARAM_BASE + BLEND_PARAM_BASE + "approach_speed";
+  const static std::string BLENDING_SPD_PARAM = PARAM_BASE + BLEND_PARAM_BASE + "blending_speed";
+  const static std::string RETRACT_SPD_PARAM = PARAM_BASE + BLEND_PARAM_BASE + "retract_speed";
+  const static std::string TRAVERSE_SPD_PARAM = PARAM_BASE + BLEND_PARAM_BASE + "traverse_speed";
+  const static std::string Z_ADJUST_PARAM = PARAM_BASE + BLEND_PARAM_BASE + "z_adjust";
+
+  const static std::string TOOL_RADIUS_PARAM = PARAM_BASE + BLEND_PARAM_BASE + "tool_radius";
+  const static std::string TOOL_OVERLAP_PARAM = PARAM_BASE + BLEND_PARAM_BASE + "overlap";
+  const static std::string DISCRETIZATION_PARAM = PARAM_BASE + BLEND_PARAM_BASE + "discretization";
+  const static std::string TRAVERSE_HEIGHT_PARAM = PARAM_BASE + BLEND_PARAM_BASE + "traverse_height";
+
+  const static std::string APPROACH_DISTANCE_PARAM = PARAM_BASE + SCAN_PARAM_BASE + "approach_distance";
+  const static std::string QUALITY_METRIC_PARAM = PARAM_BASE + SCAN_PARAM_BASE + "quality_metric";
+  const static std::string WINDOW_WIDTH_PARAM = PARAM_BASE + SCAN_PARAM_BASE + "window_width";
+  const static std::string MIN_QA_VALUE_PARAM = PARAM_BASE + SCAN_PARAM_BASE + "min_qa_value";
+  const static std::string MAX_QA_VALUE_PARAM = PARAM_BASE + SCAN_PARAM_BASE + "max_qa_value";
+  const static std::string SCAN_OVERLAP_PARAM = PARAM_BASE + SCAN_PARAM_BASE + "overlap";
+  const static std::string SCAN_WIDTH_PARAM = PARAM_BASE + SCAN_PARAM_BASE + "scan_width";
+
+
+  nh.setParam(SPINDLE_SPD_PARAM, blend_params.spindle_speed);
+  nh.setParam(APPROACH_SPD_PARAM, blend_params.approach_spd);
+  nh.setParam(BLENDING_SPD_PARAM, blend_params.blending_spd);
+  nh.setParam(RETRACT_SPD_PARAM, blend_params.retract_spd);
+  nh.setParam(TRAVERSE_SPD_PARAM, blend_params.traverse_spd);
+
+  nh.setParam(Z_ADJUST_PARAM, blend_params.z_adjust);
+  nh.setParam(DISCRETIZATION_PARAM, blend_params.discretization);
+  nh.setParam(TOOL_RADIUS_PARAM, blend_params.tool_radius);
+  nh.setParam(TOOL_OVERLAP_PARAM, blend_params.overlap);
+  nh.setParam(TRAVERSE_HEIGHT_PARAM, blend_params.safe_traverse_height);
+
+  nh.setParam(APPROACH_DISTANCE_PARAM, scan_params.approach_distance);
+  nh.setParam(QUALITY_METRIC_PARAM, scan_params.quality_metric);
+  nh.setParam(WINDOW_WIDTH_PARAM, scan_params.window_width);
+  nh.setParam(MIN_QA_VALUE_PARAM, scan_params.min_qa_value);
+  nh.setParam(MAX_QA_VALUE_PARAM, scan_params.max_qa_value);
+  nh.setParam(SCAN_OVERLAP_PARAM, scan_params.overlap);
+  nh.setParam(SCAN_WIDTH_PARAM, scan_params.scan_width);
+}
+
 godel_surface_detection::TrajectoryLibrary SurfaceBlendingService::generateMotionLibrary(const godel_msgs::BlendingPlanParameters& blend_params, const godel_msgs::ScanPlanParameters& scan_params)
 {
   SWRI_PROFILE("generate-motion-library");
@@ -327,6 +379,10 @@ godel_surface_detection::TrajectoryLibrary SurfaceBlendingService::generateMotio
   process_path_results_.blend_poses_.clear();
   process_path_results_.edge_poses_.clear();
   process_path_results_.scan_poses_.clear();
+
+  // super hack: Our path planning plugins get created momentarily and must load their parameters from plugins
+  // so here we update a set of fixed parameters for their purposes
+  uploadParameters(blend_params, scan_params);
 
   for (const auto& id : selected_ids)
   {

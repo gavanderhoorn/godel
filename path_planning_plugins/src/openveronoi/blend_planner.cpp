@@ -11,10 +11,35 @@
 
 const static std::string PATH_GENERATION_SERVICE = "process_path_generator";
 
+const static std::string PARAM_BASE = "/process_planning_params/";
+const static std::string SCAN_PARAM_BASE = "scan_params/";
+const static std::string BLEND_PARAM_BASE = "blend_params/";
+
+const static std::string SPINDLE_SPD_PARAM = PARAM_BASE + BLEND_PARAM_BASE + "spindle_speed";
+
+const static std::string APPROACH_SPD_PARAM = PARAM_BASE + BLEND_PARAM_BASE + "approach_speed";
+const static std::string BLENDING_SPD_PARAM = PARAM_BASE + BLEND_PARAM_BASE + "blending_speed";
+const static std::string RETRACT_SPD_PARAM = PARAM_BASE + BLEND_PARAM_BASE + "retract_speed";
+const static std::string TRAVERSE_SPD_PARAM = PARAM_BASE + BLEND_PARAM_BASE + "traverse_speed";
+const static std::string Z_ADJUST_PARAM = PARAM_BASE + BLEND_PARAM_BASE + "z_adjust";
+const static std::string TRAVERSE_HEIGHT_PARAM = PARAM_BASE + BLEND_PARAM_BASE + "traverse_height";
+
+const static std::string TOOL_RADIUS_PARAM = PARAM_BASE + BLEND_PARAM_BASE + "tool_radius";
+const static std::string TOOL_OVERLAP_PARAM = PARAM_BASE + BLEND_PARAM_BASE + "overlap";
+const static std::string DISCRETIZATION_PARAM = PARAM_BASE + BLEND_PARAM_BASE + "discretization";
 
 namespace path_planning_plugins
 {
 typedef  godel_msgs::PathPlanningParameters PlanningParams;
+
+template<typename T>
+static void loadOrThrow(ros::NodeHandle& nh, const std::string& key, T& value)
+{
+  if (!nh.getParam(key, value))
+  {
+    throw std::runtime_error("Unable to load parameter: " + nh.resolveName(key));
+  }
+}
 
 void openveronoi::BlendPlanner::init(pcl::PolygonMesh mesh)
 {
@@ -32,14 +57,17 @@ bool openveronoi::BlendPlanner::generatePath(std::vector<geometry_msgs::PoseArra
   ros::NodeHandle nh;
   ros::ServiceClient process_path_client = nh.serviceClient<godel_msgs::PathPlanning>(PATH_GENERATION_SERVICE);
   godel_msgs::PathPlanningParameters params;
+
+
+
   try
   {
-    nh.getParam(DISCRETIZATION, params.discretization);
-    nh.getParam(MARGIN, params.margin);
-    nh.getParam(OVERLAP, params.overlap);
-    nh.getParam(SAFE_TRAVERSE_HEIGHT, params.traverse_height);
-    nh.getParam(SCAN_WIDTH, params.scan_width);
-    nh.getParam(TOOL_RADIUS, params.tool_radius);
+    loadOrThrow(nh, DISCRETIZATION_PARAM, params.discretization);
+    params.margin = 0;
+    loadOrThrow(nh, TOOL_OVERLAP_PARAM, params.overlap);
+    loadOrThrow(nh, SAFE_TRAVERSE_HEIGHT, params.traverse_height);
+    loadOrThrow(nh, TOOL_RADIUS_PARAM, params.tool_radius);
+//    loadOrThrow(nh, SCAN_WIDTH, params.scan_width);
   }
   catch(const std::exception& e)
   {
