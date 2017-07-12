@@ -92,7 +92,7 @@ bool SurfaceBlendingService::init()
   ph.param<std::string>("param_cache_prefix", param_cache_prefix_, "");
 
   if (!this->load_path_planning_parameters(param_cache_prefix_ + PATH_PLANNING_PARAMS_FILE))
-    ROS_WARN("Unable to load blending process parameters.");
+    ROS_WARN("Unable to load path planning parameters.");
 
   if (!this->load_blend_parameters(param_cache_prefix_ + BLEND_PARAMS_FILE))
     ROS_WARN("Unable to load blending process parameters.");
