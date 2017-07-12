@@ -22,6 +22,8 @@ namespace meshing_plugins_base
      * @return true if the generation was successful, false if it failed
      */
     virtual bool generateMesh(pcl::PolygonMesh& mesh) = 0;
+
+    virtual ~MeshingBase() {}
   };
 } // end namespace meshing_plugins_base
 
