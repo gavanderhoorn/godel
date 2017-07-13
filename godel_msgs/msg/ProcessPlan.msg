@@ -14,3 +14,5 @@ trajectory_msgs/JointTrajectory trajectory_approach
 trajectory_msgs/JointTrajectory trajectory_process
 trajectory_msgs/JointTrajectory trajectory_depart
 int32 type
+
+godel_msgs/PathMetaInfo meta_info

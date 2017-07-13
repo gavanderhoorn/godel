@@ -41,6 +41,7 @@ add_message_files(
   ScanPlanParameters.msg
   SurfaceBoundaries.msg
   SurfaceDetectionParameters.msg
+  PathMetaInfo.msg
 )
 
 ## Generate services in the 'srv' folder

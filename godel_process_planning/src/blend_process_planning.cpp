@@ -40,6 +40,33 @@ descartes_core::TrajectoryPtPtr toDescartesBlendPt(const Eigen::Affine3d& pose, 
                                               AxialSymmetricPt::Z_AXIS, tm);
 }
 
+static godel_msgs::PathMetaInfo convert(const godel_process_planning::PathMetaInfo& meta)
+{
+  godel_msgs::PathMetaInfo msg;
+
+  for (const auto& s : meta.segments)
+  {
+    msg.segment_size.push_back(s.size);
+
+    switch (s.type)
+    {
+    case PathMetaInfo::Type::APPROACH:
+      msg.segment_types.push_back(godel_msgs::PathMetaInfo::SEGMENT_APPROACH_TYPE);
+      break;
+    case PathMetaInfo::Type::PROCESS:
+      msg.segment_types.push_back(godel_msgs::PathMetaInfo::SEGMENT_PROCESS_TYPE);
+      break;
+    case PathMetaInfo::Type::TRAVERSE:
+      msg.segment_types.push_back(godel_msgs::PathMetaInfo::SEGMENT_TRAVERSE_TYPE);
+      break;
+    default:
+      throw std::runtime_error("Unrecognized Meta Info Type");
+    }
+  }
+
+  return msg;
+}
+
 /**
  * @brief Computes a joint motion plan based on input points and the blending process; this includes
  *        motion from current position to process path and back to the starting position.
@@ -91,14 +118,16 @@ bool ProcessPlanningManager::handleBlendPlanning(godel_msgs::BlendProcessPlannin
   speeds.traverse_speed = std::max(min_speed, req.params.traverse_spd);
   speeds.approach_speed = std::max(min_speed, req.params.approach_spd);
 
+  PathMetaInfo meta_info;
 
   DescartesTraj process_points = toDescartesTraj(req.path.segments, speeds, transition_params,
-                                                 toDescartesBlendPt);
+                                                 toDescartesBlendPt, &meta_info);
 
   if (generateMotionPlan(blend_model_, process_points, moveit_model_, blend_group_name_,
                          current_joints, res.plan))
   {
     res.plan.type = res.plan.BLEND_TYPE;
+    res.plan.meta_info = convert(meta_info);
     return true;
   }
   else

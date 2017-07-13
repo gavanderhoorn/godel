@@ -142,20 +142,28 @@ using DescartesConversionFunc =
 godel_process_planning::DescartesTraj
 godel_process_planning::toDescartesTraj(const std::vector<geometry_msgs::PoseArray> &segments,
                                         const ToolSpeeds& speeds, const TransitionParameters& transition_params,
-                                        DescartesConversionFunc conversion_fn)
+                                        DescartesConversionFunc conversion_fn, PathMetaInfo* meta)
 {
   auto transitions = generateTransitions(segments, transition_params);
 
   DescartesTraj traj;
   Eigen::Affine3d last_pose = createNominalTransform(segments.front().poses.front());
 
+  // Keep track of the meta-information about the size and type of each segment of the path
+  PathMetaInfo temp_meta;
+  temp_meta.speeds = speeds;
+
   // Convert pose arrays to Eigen types
   auto eigen_segments = toEigenArrays(segments);
 
   // Inline function for adding a sequence of motions
-  auto add_segment = [&traj, &last_pose, conversion_fn, transition_params]
-                     (const EigenSTL::vector_Affine3d& poses, const double speed, bool free_last)
+  auto add_segment = [&traj, &last_pose, &temp_meta, conversion_fn, transition_params]
+                     (const EigenSTL::vector_Affine3d& poses, const double speed, bool free_last,
+                      PathMetaInfo::Type type)
   {
+    PathMetaInfo::Segment meta_segment;
+    const auto start_size = traj.size();
+
     // Create Descartes trajectory for the segment path
     for (std::size_t j = 0; j < poses.size(); ++j)
     {
@@ -176,15 +184,20 @@ godel_process_planning::toDescartesTraj(const std::vector<geometry_msgs::PoseArr
       traj.push_back( conversion_fn(this_pose, dt) );
       last_pose = this_pose;
     }
+
+    const auto end_size = traj.size();
+    meta_segment.size = end_size - start_size;
+    meta_segment.type = type;
+    temp_meta.segments.push_back(meta_segment);
   };
 
   for (std::size_t i = 0; i < segments.size(); ++i)
   {
-    add_segment(transitions[i].approach, speeds.approach_speed, false);
+    add_segment(transitions[i].approach, speeds.approach_speed, false, PathMetaInfo::Type::APPROACH);
 
-    add_segment(eigen_segments[i], speeds.process_speed, false);
+    add_segment(eigen_segments[i], speeds.process_speed, false, PathMetaInfo::Type::PROCESS);
 
-    add_segment(transitions[i].depart, speeds.approach_speed, false);
+    add_segment(transitions[i].depart, speeds.approach_speed, false, PathMetaInfo::Type::APPROACH);
 
     if (i != segments.size() - 1)
     {
@@ -194,9 +207,12 @@ godel_process_planning::toDescartesTraj(const std::vector<geometry_msgs::PoseArr
       auto connection = interpolateCartesian(transitions[i].depart.back(),
                                              closestRotationalPose(transitions[i].depart.back(), transitions[i+1].approach.front()),
                                              transition_params.linear_disc, transition_params.angular_disc);
-      add_segment(connection, speeds.traverse_speed, false);
+      add_segment(connection, speeds.traverse_speed, false, PathMetaInfo::Type::TRAVERSE);
     }
   } // end segments
+
+  if (meta)
+    *meta = temp_meta;
 
   return traj;
 }
