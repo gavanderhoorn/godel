@@ -21,6 +21,7 @@ void godel_plugins::BlendPlanConfigWidget::update_gui_fields()
 
   ui_.lineEditProcessSpeed->setText(QString::number(params_.blending_spd));
   ui_.lineEditTraverseSpeed->setText(QString::number(params_.traverse_spd));
+  ui_.lineEditApproachSpeed->setText(QString::number(params_.approach_spd));
 
   ui_.lineEditDiscretization->setText(QString::number(params_.discretization));
   ui_.lineEditTraverseHeight->setText(QString::number(params_.safe_traverse_height));
@@ -31,7 +32,6 @@ void godel_plugins::BlendPlanConfigWidget::update_internal_values()
 {
   // Block of un-used parameters
   params_.margin = 0.0;
-  params_.approach_spd = 0.0;
   params_.retract_spd = 0.0;
   params_.min_boundary_length = 0.0;
 
@@ -43,6 +43,7 @@ void godel_plugins::BlendPlanConfigWidget::update_internal_values()
 
   params_.blending_spd = ui_.lineEditProcessSpeed->text().toDouble();
   params_.traverse_spd = ui_.lineEditTraverseSpeed->text().toDouble();
+  params_.approach_spd = ui_.lineEditApproachSpeed->text().toDouble();
 
   params_.discretization = ui_.lineEditDiscretization->text().toDouble();
   params_.safe_traverse_height = ui_.lineEditTraverseHeight->text().toDouble();

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>409</width>
-    <height>460</height>
+    <height>498</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -23,7 +23,7 @@
    <property name="geometry">
     <rect>
      <x>30</x>
-     <y>410</y>
+     <y>430</y>
      <width>351</width>
      <height>32</height>
     </rect>
@@ -87,9 +87,9 @@
    <property name="geometry">
     <rect>
      <x>40</x>
-     <y>280</y>
+     <y>300</y>
      <width>331</width>
-     <height>31</height>
+     <height>51</height>
     </rect>
    </property>
    <property name="text">
@@ -105,7 +105,7 @@
      <x>32</x>
      <y>41</y>
      <width>351</width>
-     <height>231</height>
+     <height>272</height>
     </rect>
    </property>
    <layout class="QFormLayout" name="formLayout">
@@ -185,15 +185,25 @@
     <item row="6" column="1">
      <widget class="QLineEdit" name="lineEditZAdjust"/>
     </item>
+    <item row="7" column="0">
+     <widget class="QLabel" name="label_12">
+      <property name="text">
+       <string>Approach Speed (m/s)</string>
+      </property>
+     </widget>
+    </item>
+    <item row="7" column="1">
+     <widget class="QLineEdit" name="lineEditApproachSpeed"/>
+    </item>
    </layout>
   </widget>
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>30</x>
-     <y>320</y>
+     <y>340</y>
      <width>351</width>
-     <height>71</height>
+     <height>80</height>
     </rect>
    </property>
    <layout class="QFormLayout" name="formLayout_2">
@@ -210,6 +220,9 @@
       </property>
      </widget>
     </item>
+    <item row="0" column="1">
+     <widget class="QLineEdit" name="lineEditSpindleSpeed"/>
+    </item>
     <item row="1" column="0">
      <widget class="QLabel" name="label_10">
       <property name="text">
@@ -219,9 +232,6 @@
     </item>
     <item row="1" column="1">
      <widget class="QLineEdit" name="lineEditToolForce"/>
-    </item>
-    <item row="0" column="1">
-     <widget class="QLineEdit" name="lineEditSpindleSpeed"/>
     </item>
    </layout>
   </widget>
