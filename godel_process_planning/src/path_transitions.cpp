@@ -141,7 +141,7 @@ using DescartesConversionFunc =
 
 godel_process_planning::DescartesTraj
 godel_process_planning::toDescartesTraj(const std::vector<geometry_msgs::PoseArray> &segments,
-                                        const double process_speed, const TransitionParameters& transition_params,
+                                        const ToolSpeeds& speeds, const TransitionParameters& transition_params,
                                         DescartesConversionFunc conversion_fn)
 {
   auto transitions = generateTransitions(segments, transition_params);
@@ -153,8 +153,8 @@ godel_process_planning::toDescartesTraj(const std::vector<geometry_msgs::PoseArr
   auto eigen_segments = toEigenArrays(segments);
 
   // Inline function for adding a sequence of motions
-  auto add_segment = [&traj, &last_pose, process_speed, conversion_fn, transition_params]
-                     (const EigenSTL::vector_Affine3d& poses, bool free_last)
+  auto add_segment = [&traj, &last_pose, conversion_fn, transition_params]
+                     (const EigenSTL::vector_Affine3d& poses, const double speed, bool free_last)
   {
     // Create Descartes trajectory for the segment path
     for (std::size_t j = 0; j < poses.size(); ++j)
@@ -162,7 +162,7 @@ godel_process_planning::toDescartesTraj(const std::vector<geometry_msgs::PoseArr
       Eigen::Affine3d this_pose = createNominalTransform(poses[j], transition_params.z_adjust);
       // O(1) jerky - may need to revisit this time parameterization later. This at least allows
       // Descartes to perform some optimizations in its graph serach.
-      double dt = (this_pose.translation() - last_pose.translation()).norm() / process_speed;
+      double dt = (this_pose.translation() - last_pose.translation()).norm() / speed;
 
       if (dt < 1e-4)
       {
@@ -180,11 +180,11 @@ godel_process_planning::toDescartesTraj(const std::vector<geometry_msgs::PoseArr
 
   for (std::size_t i = 0; i < segments.size(); ++i)
   {
-    add_segment(transitions[i].approach, false);
+    add_segment(transitions[i].approach, speeds.approach_speed, false);
 
-    add_segment(eigen_segments[i], false);
+    add_segment(eigen_segments[i], speeds.process_speed, false);
 
-    add_segment(transitions[i].depart, false);
+    add_segment(transitions[i].depart, speeds.approach_speed, false);
 
     if (i != segments.size() - 1)
     {
@@ -194,7 +194,7 @@ godel_process_planning::toDescartesTraj(const std::vector<geometry_msgs::PoseArr
       auto connection = interpolateCartesian(transitions[i].depart.back(),
                                              closestRotationalPose(transitions[i].depart.back(), transitions[i+1].approach.front()),
                                              transition_params.linear_disc, transition_params.angular_disc);
-      add_segment(connection, false);
+      add_segment(connection, speeds.traverse_speed, false);
     }
   } // end segments
 

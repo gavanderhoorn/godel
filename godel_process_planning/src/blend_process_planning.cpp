@@ -78,13 +78,21 @@ bool ProcessPlanningManager::handleBlendPlanning(godel_msgs::BlendProcessPlannin
   const static double RETRACT_DISTANCE = 0.05; // meters
 
   TransitionParameters transition_params;
-  transition_params.linear_disc = LINEAR_DISCRETIZATION;
+  transition_params.linear_disc = req.params.discretization;
   transition_params.angular_disc = ANGULAR_DISCRETIZATION;
   transition_params.retract_dist = RETRACT_DISTANCE;
   transition_params.traverse_height = req.params.safe_traverse_height;
   transition_params.z_adjust = req.params.z_adjust;
 
-  DescartesTraj process_points = toDescartesTraj(req.path.segments, req.params.traverse_spd, transition_params,
+  // Load speed parameters and make sure they are sane
+  const static double min_speed = 0.001;
+  ToolSpeeds speeds;
+  speeds.process_speed = std::max(min_speed, req.params.blending_spd);
+  speeds.traverse_speed = std::max(min_speed, req.params.traverse_spd);
+  speeds.approach_speed = std::max(min_speed, req.params.approach_spd);
+
+
+  DescartesTraj process_points = toDescartesTraj(req.path.segments, speeds, transition_params,
                                                  toDescartesBlendPt);
 
   if (generateMotionPlan(blend_model_, process_points, moveit_model_, blend_group_name_,
