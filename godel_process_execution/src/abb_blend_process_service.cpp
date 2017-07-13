@@ -177,6 +177,15 @@ bool godel_process_execution::AbbBlendProcessService::executeProcess(
   appendTrajectory(aggregate_traj, goal->trajectory_process);
   appendTrajectory(aggregate_traj, goal->trajectory_depart);
 
+  const auto meta_path_size = std::accumulate(goal->meta_info.segment_size.begin(),
+                                              goal->meta_info.segment_size.end(), 0u);
+  if (meta_path_size != goal->trajectory_process.points.size())
+  {
+    ROS_ERROR_STREAM("Meta Info Msg Accounts for " << meta_path_size << " points, which does not equal the process "
+                     "path size of " << goal->trajectory_process.points.size());
+    return false;
+  }
+
   // ABB Rapid Emmiter
   std::vector<rapid_emitter::TrajectoryPt> pts = toRapidTrajectory(aggregate_traj, j23_coupled_);
 

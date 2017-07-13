@@ -15,6 +15,8 @@ bool simulate
 godel_msgs/BlendingPlanParameters blend_params
 godel_msgs/ScanPlanParameters scan_params
 
+godel_msgs/PathMetaInfo meta_info
+
 ---
 # Result
 

@@ -704,6 +704,7 @@ void SurfaceBlendingService::selectMotionPlansActionCallback(const godel_msgs::S
   goal.goal.trajectory_approach = trajectory_library_.get()[goal_in->name].trajectory_approach;
   goal.goal.trajectory_depart = trajectory_library_.get()[goal_in->name].trajectory_depart;
   goal.goal.trajectory_process = trajectory_library_.get()[goal_in->name].trajectory_process;
+  goal.goal.meta_info = trajectory_library_.get()[goal_in->name].meta_info;
   goal.goal.wait_for_execution = goal_in->wait_for_execution;
   goal.goal.simulate = goal_in->simulate;
 
