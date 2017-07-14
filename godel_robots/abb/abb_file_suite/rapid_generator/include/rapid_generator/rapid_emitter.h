@@ -8,20 +8,6 @@
 
 namespace rapid_emitter
 {
-/**
- * @brief Writes a RAPID program to 'os' that moves through a sequence of joint positions
- *        and toggles an I/O on and off at specific sequence points.
- * @param os  The output stream; will usually be a std::ofstream
- * @param points  Sequence of joint-positions and durations
- * @param startProcessMotion  The first joint-position inside the 'process' segment of the points
- * array
- * @param endProcessMotion The final joint-position inside the 'process' segment of the points array
- * @param params Process parameters such as tool velocity
- * @return Success if the file was successfully generated
- */
-bool emitRapidFile(std::ostream& os, const std::vector<TrajectoryPt>& points,
-                   size_t startProcessMotion, size_t endProcessMotion, const ProcessParams& params);
-
 
 struct TrajectorySegment
 {
@@ -30,6 +16,18 @@ struct TrajectorySegment
   std::vector<TrajectoryPt> points;
 };
 
+/**
+ * @brief Writes a RAPID program to 'os' that moves through a sequence of joint positions
+ *        and toggles an I/O on and off at specific sequence points.
+ * @param os The output ostream object: could be a file handle or string stream
+ * @param approach Trajectory representing phase 1 of the process path - approach to the first segment
+ * @param departure The trajectory representing motion away from the last segment
+ * @param segments The sequence, in order, of process paths - enumerated by type:process, approach, or traverse.
+ *                 This only changes your tool velocities.
+ * @param params The set of parameters that indicate velocities for different phase of the project, and other,
+ *               possibly optional process parameters.
+ * @return True if a file was generated; false if there was some kind of IO error
+ */
 bool emitRapidFile(std::ostream& os, const std::vector<TrajectoryPt>& approach,
                    const std::vector<TrajectoryPt>& departure, const std::vector<TrajectorySegment>& segments,
                    const ProcessParams& params);
