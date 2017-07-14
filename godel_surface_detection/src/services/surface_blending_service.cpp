@@ -706,6 +706,8 @@ void SurfaceBlendingService::selectMotionPlansActionCallback(const godel_msgs::S
   goal.goal.trajectory_process = trajectory_library_.get()[goal_in->name].trajectory_process;
   goal.goal.meta_info = trajectory_library_.get()[goal_in->name].meta_info;
   goal.goal.wait_for_execution = goal_in->wait_for_execution;
+  goal.goal.scan_params = scan_plan_params_;
+  goal.goal.blend_params = blending_plan_params_;
   goal.goal.simulate = goal_in->simulate;
 
   actionlib::SimpleActionClient<godel_msgs::ProcessExecutionAction> *exe_client =

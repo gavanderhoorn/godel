@@ -85,30 +85,33 @@ static std::vector<double> toDegrees(const std::vector<double>& rads)
 }
 
 static std::vector<rapid_emitter::TrajectoryPt>
-toRapidTrajectory(const trajectory_msgs::JointTrajectory& traj, bool j23_coupled)
+toRapidTrajectory(const std::vector<trajectory_msgs::JointTrajectoryPoint>::const_iterator start,
+                  const std::vector<trajectory_msgs::JointTrajectoryPoint>::const_iterator end,
+                  const bool j23_coupled)
 {
   std::vector<rapid_emitter::TrajectoryPt> rapid_pts;
-  rapid_pts.reserve(traj.points.size());
+  rapid_pts.reserve(std::distance(start, end));
 
-  for (std::size_t i = 0; i < traj.points.size(); ++i)
+  ros::Duration last_from_start;
+  for (auto it = start; it < end; ++it)
   {
-
     // Retrieve and convert joint values to degrees
-    std::vector<double> angles = toDegrees(traj.points[i].positions);
+    std::vector<double> angles = toDegrees(it->positions);
 
     // Account for coupling if necessary
     if (j23_coupled)
     {
-      ROS_ASSERT(traj.points[i].positions.size() > 2);
+      ROS_ASSERT(it->positions.size() > 2);
       angles[2] += angles[1];
     }
 
     // Calculate between point timing
     double duration = 0.0;
-    if (i > 0)
+    if (it != start)
     {
-      duration = (traj.points[i].time_from_start - traj.points[i - 1].time_from_start).toSec();
+      duration = (it->time_from_start - last_from_start).toSec();
     }
+    last_from_start = it->time_from_start;
 
     // Now we have all the info we need
     rapid_emitter::TrajectoryPt rapid_point(angles, duration);
@@ -117,9 +120,16 @@ toRapidTrajectory(const trajectory_msgs::JointTrajectory& traj, bool j23_coupled
   return rapid_pts;
 }
 
+static std::vector<rapid_emitter::TrajectoryPt>
+toRapidTrajectory(const trajectory_msgs::JointTrajectory& traj, bool j23_coupled)
+{
+  return toRapidTrajectory(traj.points.begin(), traj.points.end(), j23_coupled);
+}
+
 static bool writeRapidFile(const std::string& path,
-                           const std::vector<rapid_emitter::TrajectoryPt>& traj,
-                           unsigned process_start, unsigned process_stop,
+                           const std::vector<rapid_emitter::TrajectoryPt>& approach,
+                           const std::vector<rapid_emitter::TrajectoryPt>& depart,
+                           const std::vector<rapid_emitter::TrajectorySegment>& process_segments,
                            const rapid_emitter::ProcessParams& params)
 {
   std::ofstream fp("/tmp/blend.mod");
@@ -129,7 +139,7 @@ static bool writeRapidFile(const std::string& path,
     return false;
   }
 
-  if (!rapid_emitter::emitRapidFile(fp, traj, process_start, process_stop, params))
+  if (!rapid_emitter::emitRapidFile(fp, approach, depart, process_segments, params))
   {
     ROS_ERROR("Unable to write to RAPID file for blending process.");
     return false;
@@ -172,6 +182,7 @@ void godel_process_execution::AbbBlendProcessService::executionCallback(
 bool godel_process_execution::AbbBlendProcessService::executeProcess(
     const godel_msgs::ProcessExecutionGoalConstPtr &goal)
 {
+  ROS_ERROR_STREAM("NEW FTP GOAL:\n" << *goal);
   trajectory_msgs::JointTrajectory aggregate_traj;
   aggregate_traj = goal->trajectory_approach;
   appendTrajectory(aggregate_traj, goal->trajectory_process);
@@ -186,26 +197,54 @@ bool godel_process_execution::AbbBlendProcessService::executeProcess(
     return false;
   }
 
-  // ABB Rapid Emmiter
-  std::vector<rapid_emitter::TrajectoryPt> pts = toRapidTrajectory(aggregate_traj, j23_coupled_);
-
   // RAPID process parameters
   rapid_emitter::ProcessParams params;
   params.spindle_speed = 1.0;
-  params.process_speed = 200;
+  params.process_speed = goal->blend_params.blending_spd * 1000.0;
+  params.traversal_speed = goal->blend_params.traverse_spd * 1000.0;
+  params.approach_speed = goal->blend_params.approach_spd * 1000.0;
   params.wolf_mode = false;
   params.slide_force = 0.0;
   params.output_name = "do_PIO_8";
 
-  // Calculate process start and end indexes
-  unsigned start_index = goal->trajectory_approach.points.size();
-  unsigned stop_index = start_index + goal->trajectory_process.points.size();
 
-  if (!writeRapidFile("/tmp/blend.mod", pts, start_index, stop_index, params))
+  auto approach = toRapidTrajectory(goal->trajectory_approach, j23_coupled_);
+  auto depart = toRapidTrajectory(goal->trajectory_depart, j23_coupled_);
+
+  // Now we must unpack the segments of the process path
+  std::vector<rapid_emitter::TrajectorySegment> segments;
+  segments.reserve(goal->meta_info.segment_size.size());
+
+  std::size_t running_count = 0;
+  for (std::size_t i = 0; i < goal->meta_info.segment_size.size(); ++i)
+  {
+    const auto segment_size = goal->meta_info.segment_size[i];
+    const auto segment_type = goal->meta_info.segment_types[i];
+
+    rapid_emitter::TrajectorySegment segment;
+    if (segment_type == godel_msgs::PathMetaInfo::SEGMENT_APPROACH_TYPE)
+      segment.type = segment.APPROACH;
+    else if (segment_type == godel_msgs::PathMetaInfo::SEGMENT_PROCESS_TYPE)
+      segment.type = segment.PROCESS;
+    else
+      segment.type = segment.TRAVERSE;
+
+    const auto path_start = goal->trajectory_process.points.begin() + running_count;
+    const auto path_end = path_start + segment_size;
+    running_count += segment_size;
+    segment.points = toRapidTrajectory(path_start, path_end, j23_coupled_);
+    segments.push_back(segment);
+  }
+
+
+
+  if (!writeRapidFile("/tmp/blend.mod", approach, depart, segments, params))
   {
     ROS_ERROR("Unable to generate RAPID motion file; Cannot execute process.");
     return false;
   }
+
+
 
   // Call the ABB driver
 
