@@ -103,9 +103,9 @@ godel_process_planning::generateTransitions(const std::vector<geometry_msgs::Pos
                                             const TransitionParameters& params)
 {
   auto traverse_height = params.traverse_height;
-  if (traverse_height < 0.1)
+  if (traverse_height < 0.05)
   {
-    ROS_WARN("Forcing traverse height to at least 0.1m to protect against broken configurations "
+    ROS_WARN("Forcing traverse height to at least 0.05m to protect against broken configurations "
              "user requested height = %f.", traverse_height);
     traverse_height = 0.1;
   }
