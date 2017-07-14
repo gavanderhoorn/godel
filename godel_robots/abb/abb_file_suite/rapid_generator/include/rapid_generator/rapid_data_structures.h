@@ -33,11 +33,14 @@ struct TrajectoryPt
 struct ProcessParams
 {
   double spindle_speed;    // Tool rotation speed
-  double tcp_speed;        // Tool linear traversal speed
   double force;            // For non-wolfware software, a general identification of force
   std::string output_name; // The I/O that toggles the tool power; We assume 0 is off and 1 is on.
   bool wolf_mode;          // In the case of Wolfware software, we emit special instructions.
   double slide_force;      // For WolfWare, a meaure of the cross-slide force (?)
+
+  double process_speed;        // Tool linear traversal speed
+  double approach_speed;
+  double traversal_speed;
 };
 }
 

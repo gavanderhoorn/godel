@@ -192,7 +192,7 @@ bool godel_process_execution::AbbBlendProcessService::executeProcess(
   // RAPID process parameters
   rapid_emitter::ProcessParams params;
   params.spindle_speed = 1.0;
-  params.tcp_speed = 200;
+  params.process_speed = 200;
   params.wolf_mode = false;
   params.slide_force = 0.0;
   params.output_name = "do_PIO_8";

@@ -22,6 +22,18 @@ namespace rapid_emitter
 bool emitRapidFile(std::ostream& os, const std::vector<TrajectoryPt>& points,
                    size_t startProcessMotion, size_t endProcessMotion, const ProcessParams& params);
 
+
+struct TrajectorySegment
+{
+  enum SegmentType { PROCESS, APPROACH, TRAVERSE };
+  SegmentType type;
+  std::vector<TrajectoryPt> points;
+};
+
+bool emitRapidFile(std::ostream& os, const std::vector<TrajectoryPt>& approach,
+                   const std::vector<TrajectoryPt>& departure, const std::vector<TrajectorySegment>& segments,
+                   const ProcessParams& params);
+
 /**
  * @brief Writes a RAPID program to 'os' that merely moves through a sequence of points.
  * @param os  The output stream; will usually be std::ofstream

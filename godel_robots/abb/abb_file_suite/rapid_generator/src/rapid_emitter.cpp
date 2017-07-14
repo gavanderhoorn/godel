@@ -146,26 +146,31 @@ bool rapid_emitter::emitSetOutput(std::ostream& os, const ProcessParams& params,
   return os.good();
 }
 
+static void emitSpeedData(std::ostream& os, const std::string& name, const double linear_speed, const double angular_speed,
+                          const double external_linear_speed = 500.0, const double external_angular_speed = 90.0)
+{
+  os << "CONST speeddata " << name << ":=[" << linear_speed << "," << angular_speed << "," << external_linear_speed
+     << "," << external_angular_speed << "];\n";
+}
+
 bool rapid_emitter::emitProcessDeclarations(std::ostream& os, const ProcessParams& params,
                                             size_t value)
 {
   if (params.wolf_mode)
   {
-    os << "TASK PERS grinddata gr1:=[" << params.tcp_speed << "," << params.spindle_speed << ","
-       << params.slide_force << ",FALSE,FALSE,FALSE,0,0];\n";
+    os << "TASK PERS grinddata gr1:=[" << params.process_speed << ","
+                                       << params.spindle_speed << ","
+                                       << params.slide_force << ",FALSE,FALSE,FALSE,0,0];\n";
   }
   else
   {
-    // Process Speed
-    os << "CONST speeddata vProcessSpeed:=[" << params.tcp_speed << "," << params.tcp_speed
-       << ",50,50];\n";
+    emitSpeedData(os, "vApproachSpeed", params.approach_speed, 45.0);
+    emitSpeedData(os, "vProcessSpeed", params.process_speed, 45.0);
+    emitSpeedData(os, "vTraverseSpeed", params.traversal_speed, 45.0);
   }
-  // Free motion speed
-  os << "CONST speeddata vMotionSpeed:=["
-     << "200"
-     << ","
-     << "30"
-     << ",500,500];\n";
+
+  emitSpeedData(os, "vMotionSpeed", 200, 30);
+
   return os.good();
 }
 
@@ -207,4 +212,141 @@ bool rapid_emitter::emitJointTrajectoryFile(std::ostream& os,
   os << "ENDMODULE\n";
 
   return os.good();
+}
+
+
+static void emitMoveMotion(std::ostream& os, const std::size_t index, const std::string& speeddata,
+                           const rapid_emitter::ProcessParams& params)
+{
+  os << "MoveL CalcRobT(jTarget_" << index << ",tool1), " << speeddata << ", z40, tool1;\n";
+}
+
+static void emitProcessMotion(std::ostream& os, const std::size_t index, bool start, bool end,
+                              const rapid_emitter::ProcessParams& params)
+{
+  if (params.wolf_mode)
+  {
+    if (start)
+    {
+      os << "GrindLStart CalcRobT(jTarget_" << index << ",tool1), vProcessSpeed, gr1, fiindexe, tool1;\n";
+    }
+    else if (end)
+    {
+      os << "GrindLEnd CalcRobT(jTarget_" << index << ",tool1), vProcessSpeed, fine, tool1;\n";
+    }
+    else
+    {
+      os << "GrindL CalcRobT(jTarget_" << index << ",tool1), vProcessSpeed, z40, tool1;\n";
+    }
+  }
+  else
+  {
+    emitMoveMotion(os, index, "vProcessSpeed", params);
+  }
+}
+
+static void emitApproachPath(std::ostream& os, const std::size_t segment_size,
+                             const rapid_emitter::ProcessParams& params, std::size_t& running_count)
+{
+  for (std::size_t i = 0; i < segment_size; ++i)
+  {
+    emitMoveMotion(os, running_count++, "vApproachSpeed", params);
+  }
+}
+
+static void emitTraversePath(std::ostream& os, const std::size_t segment_size,
+                             const rapid_emitter::ProcessParams& params, std::size_t& running_count)
+{
+  for (std::size_t i = 0; i < segment_size; ++i)
+  {
+    emitMoveMotion(os, running_count++, "vTraverseSpeed", params);
+  }
+}
+
+static void emitProcessPath(std::ostream& os, const std::size_t segment_size,
+                            const rapid_emitter::ProcessParams& params, std::size_t& running_count)
+{
+  for (std::size_t i = 0; i < segment_size; ++i)
+  {
+    bool start = i == 0;
+    bool end = i == (segment_size - 1);
+    emitProcessMotion(os, running_count++, start, end, params);
+  }
+}
+
+bool rapid_emitter::emitRapidFile(std::ostream &os, const std::vector<rapid_emitter::TrajectoryPt> &approach,
+                                  const std::vector<rapid_emitter::TrajectoryPt> &departure,
+                                  const std::vector<rapid_emitter::TrajectorySegment> &segments,
+                                  const rapid_emitter::ProcessParams &params)
+{
+
+  // Write header
+  os << "MODULE mGodel_Blend\n\n";
+
+  // Emit all joint positions
+  std::size_t count = 0;
+  for (const auto& pt : approach)
+  {
+    emitJointPosition(os, pt, count++);
+  }
+
+  for (const auto& segment : segments)
+  {
+    for (const auto& pt : segment.points)
+    {
+      emitJointPosition(os, pt, count++);
+    }
+  }
+
+  for (const auto& pt : departure)
+  {
+    emitJointPosition(os, pt, count++);
+  }
+
+  // Emit Process Declarations
+  emitProcessDeclarations(os, params, 1);
+
+  // Write beginning of procedure
+  os << "\nPROC Godel_Blend()\n";
+
+  std::size_t running_count = 0;
+  for (std::size_t i = 0; i < approach.size(); ++i)
+  {
+    const bool stop_at = (i == 0 || i == approach.size() - 1) ? true : false;
+    const double duration = (i == 0) ? 0.0 : approach[i].duration_;
+
+    emitFreeMotion(os, params, running_count++, duration, stop_at);
+  }
+
+  // Turn on the tool
+  emitSetOutput(os, params, 1);
+
+  for (const auto& segment : segments)
+  {
+    if (segment.type == TrajectorySegment::APPROACH)
+      emitApproachPath(os, segment.points.size(), params, running_count);
+    else if (segment.type == TrajectorySegment::PROCESS)
+      emitProcessPath(os, segment.points.size(), params, running_count);
+    else if (segment.type == TrajectorySegment::TRAVERSE)
+      emitTraversePath(os, segment.points.size(), params, running_count);
+    else
+      throw std::runtime_error("Unrecognized process type");
+  }
+
+  // Turn off the tool
+  emitSetOutput(os, params, 0);
+
+  for (std::size_t i = 0; i < departure.size(); ++i)
+  {
+    const bool stop_at = (i == 0 || i == departure.size() - 1) ? true : false;
+    const double duration = (i == 0) ? 0.0 : departure[i].duration_;
+
+    emitFreeMotion(os, params, running_count++, duration, stop_at);
+  }
+
+  os << "EndProc\n";
+
+  // write any footers including main procedure calling the above
+  os << "ENDMODULE\n";
+  return true;
 }
