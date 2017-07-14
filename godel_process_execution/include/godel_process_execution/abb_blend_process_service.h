@@ -8,6 +8,17 @@
 namespace godel_process_execution
 {
 
+/**
+ * @brief Parameters container for those things that are largely meant to be
+ * constant and not imagined to change run-to-run.
+ */
+struct AbbBlendProcessParameters
+{
+  std::string io_name;
+  bool j23_coupled;
+  bool wolf_mode;
+};
+
 class AbbBlendProcessService
 {
 public:
@@ -27,7 +38,7 @@ private:
   ros::ServiceClient real_client_;
   ros::ServiceClient sim_client_;
   actionlib::SimpleActionServer<godel_msgs::ProcessExecutionAction> process_exe_action_server_;
-  bool j23_coupled_;
+  AbbBlendProcessParameters params_;
 };
 }
 

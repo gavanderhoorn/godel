@@ -149,14 +149,16 @@ static bool writeRapidFile(const std::string& path,
   return true;
 }
 
-godel_process_execution::AbbBlendProcessService::AbbBlendProcessService(ros::NodeHandle& nh) : nh_(nh),
-  process_exe_action_server_(nh_,
-                           PROCESS_EXE_ACTION_SERVER_NAME,
-                           boost::bind(&godel_process_execution::AbbBlendProcessService::executionCallback, this, _1),
-                           false)
+godel_process_execution::AbbBlendProcessService::AbbBlendProcessService(ros::NodeHandle& nh)
+  : nh_(nh)
+  , process_exe_action_server_(nh_, PROCESS_EXE_ACTION_SERVER_NAME,
+                               boost::bind(&godel_process_execution::AbbBlendProcessService::executionCallback, this, _1),
+                               false)
 {
   // Load Robot Specific Parameters
-  nh_.param<bool>("J23_coupled", j23_coupled_, false);
+  nh_.param<bool>("J23_coupled", params_.j23_coupled, false);
+  nh_.param<std::string>("io_name", params_.io_name, "do_PIO_8");
+  nh_.param<bool>("wolf_mode", params_.wolf_mode, false);
 
   // Create client services
   sim_client_ = nh_.serviceClient<industrial_robot_simulator_service::SimulateTrajectory>(SIMULATION_SERVICE_NAME);
@@ -182,11 +184,6 @@ void godel_process_execution::AbbBlendProcessService::executionCallback(
 bool godel_process_execution::AbbBlendProcessService::executeProcess(
     const godel_msgs::ProcessExecutionGoalConstPtr &goal)
 {
-  ROS_ERROR_STREAM("NEW FTP GOAL:\n" << *goal);
-  trajectory_msgs::JointTrajectory aggregate_traj;
-  aggregate_traj = goal->trajectory_approach;
-  appendTrajectory(aggregate_traj, goal->trajectory_process);
-  appendTrajectory(aggregate_traj, goal->trajectory_depart);
 
   const auto meta_path_size = std::accumulate(goal->meta_info.segment_size.begin(),
                                               goal->meta_info.segment_size.end(), 0u);
@@ -197,19 +194,30 @@ bool godel_process_execution::AbbBlendProcessService::executeProcess(
     return false;
   }
 
-  // RAPID process parameters
+  // A utility for safety-checking speed values that come in via execution requests
+  const auto clamp_speed = [] (const double speed) {
+    const static double min_speed = 1.0; // mm per second
+    const static double max_speed = 1000.0; // mm per second
+    return std::min(std::max(min_speed, speed), max_speed);
+  };
+
+  // Load parameters required for post-processing
   rapid_emitter::ProcessParams params;
-  params.spindle_speed = 1.0;
-  params.process_speed = goal->blend_params.blending_spd * 1000.0;
-  params.traversal_speed = goal->blend_params.traverse_spd * 1000.0;
-  params.approach_speed = goal->blend_params.approach_spd * 1000.0;
-  params.wolf_mode = false;
-  params.slide_force = 0.0;
-  params.output_name = "do_PIO_8";
+  params.wolf_mode = params_.wolf_mode;
+  params.slide_force = goal->blend_params.tool_force;
+  params.spindle_speed = goal->blend_params.spindle_speed;
+
+  // Note that ROS represents speeds in terms of meters per second
+  // ABB represents speeds in mm per second, hence the multiplication by 1000 in these expressions
+  params.process_speed = clamp_speed(goal->blend_params.blending_spd * 1000.0);
+  params.traversal_speed = clamp_speed(goal->blend_params.traverse_spd * 1000.0);
+  params.approach_speed = clamp_speed(goal->blend_params.approach_spd * 1000.0);
+
+  params.output_name = params_.io_name;
 
 
-  auto approach = toRapidTrajectory(goal->trajectory_approach, j23_coupled_);
-  auto depart = toRapidTrajectory(goal->trajectory_depart, j23_coupled_);
+  auto approach = toRapidTrajectory(goal->trajectory_approach, params_.j23_coupled);
+  auto depart = toRapidTrajectory(goal->trajectory_depart, params_.j23_coupled);
 
   // Now we must unpack the segments of the process path
   std::vector<rapid_emitter::TrajectorySegment> segments;
@@ -232,11 +240,9 @@ bool godel_process_execution::AbbBlendProcessService::executeProcess(
     const auto path_start = goal->trajectory_process.points.begin() + running_count;
     const auto path_end = path_start + segment_size;
     running_count += segment_size;
-    segment.points = toRapidTrajectory(path_start, path_end, j23_coupled_);
+    segment.points = toRapidTrajectory(path_start, path_end, params_.j23_coupled);
     segments.push_back(segment);
   }
-
-
 
   if (!writeRapidFile("/tmp/blend.mod", approach, depart, segments, params))
   {
@@ -244,10 +250,7 @@ bool godel_process_execution::AbbBlendProcessService::executeProcess(
     return false;
   }
 
-
-
   // Call the ABB driver
-
   abb_file_suite::ExecuteProgram srv;
   srv.request.file_path = "/tmp/blend.mod";
 
@@ -259,11 +262,13 @@ bool godel_process_execution::AbbBlendProcessService::executeProcess(
 
   if (goal->wait_for_execution)
   {
+    const auto& final_pose = goal->trajectory_depart.points.back().positions;
+    const auto& total_time = goal->trajectory_approach.points.back().time_from_start +
+                             goal->trajectory_process.points.back().time_from_start +
+                             goal->trajectory_depart.points.back().time_from_start;
+    const auto& timeout = total_time + ros::Duration(DEFAULT_TRAJECTORY_BUFFER_TIME);
     // If we must wait for execution, then block and listen until robot returns to initial point or times out
-    return waitForExecution(goal->trajectory_approach.points.front().positions,
-                            aggregate_traj.points.back().time_from_start, // wait for
-                            aggregate_traj.points.back().time_from_start +
-                                ros::Duration(DEFAULT_TRAJECTORY_BUFFER_TIME)); // timeout
+    return waitForExecution(final_pose, total_time, timeout);
   }
   else
   {
