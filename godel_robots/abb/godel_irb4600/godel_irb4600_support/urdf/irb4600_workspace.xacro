@@ -4,6 +4,8 @@
 
   <xacro:include filename="$(find godel_irb4600_support)/urdf/pushcorp_macro.xacro"/>
 
+  <xacro:property name="riser_height" value=".72871"/>
+
   <link name="world_frame"/>
 
   <xacro:abb_irb4600_60_205 prefix=""/>
@@ -46,13 +48,13 @@
   <joint name="base_link_to_pedestal" type="fixed">
     <parent link="base_link"/>
     <child link="pedestal"/>
-    <origin xyz="0 0 -0.75" rpy="0 0 0"/>
+    <origin xyz="0 0 -${riser_height}" rpy="0 0 0"/>
   </joint>
 
   <joint name="base_link_to_table" type="fixed">
     <parent link="world_frame"/>
     <child link="table"/>
-    <origin xyz="0.75 -1.75 -0.75" rpy="0 0 0"/>
+    <origin xyz="1.40197 -1.45022 -0.56537" rpy="0 0 0"/>
   </joint>
 
   <joint name="tool0_to_tool1" type="fixed">
