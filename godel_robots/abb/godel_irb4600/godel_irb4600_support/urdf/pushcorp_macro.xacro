@@ -1,0 +1,65 @@
+<?xml version="1.0" ?>
+
+<!-- Automate 2017 Demo Cell "Structures" -->
+
+<!-- Exports macro: "xacro:automate_demo_cell" with 1 arg: prefix -->
+<!-- Root link: ${prefix}demo_cell_base_link -->
+<!-- Origin is at the robot (IRB 1200) mounting location -->
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <link name="tool_base_link">
+    <visual>
+      <geometry>
+        <mesh filename="package://godel_irb4600_support/meshes/visual/pushcorp.stl"/>
+      </geometry>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://godel_irb4600_support/meshes/collision/pushcorp.stl"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="tcp_frame"/>
+
+  <link name="keyence_tcp_frame"/>
+
+  <link name="keyence_sensor_optical_frame"/>
+
+  <link name="ensenso_sensor_optical_frame"/>
+
+  <link name="kinect2_move_frame"/>
+
+  <!-- Laser scanner joints -->
+  <joint name="base_to_keyence_optical_frame" type="fixed">
+    <parent link="tool_base_link"/>
+    <child link="keyence_sensor_optical_frame"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <joint name="base_to_keyence_tcp_frame" type="fixed">
+    <parent link="tool_base_link"/>
+    <child link="keyence_tcp_frame"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <!-- Blending Frame -->
+  <joint name="base_to_blending_tcp" type="fixed">
+    <parent link="tool_base_link"/>
+    <child link="tcp_frame"/>
+    <origin xyz="-0.053385 0.053384 0.527808" rpy="3.3621683182e-12 0.872664625459 2.35619448997"/>
+  </joint>
+
+  <!-- Macro-Scanner Frames -->
+  <joint name="base_to_ensenso_optical_frame" type="fixed">
+    <parent link="tool_base_link"/>
+    <child link="ensenso_sensor_optical_frame"/>
+    <origin xyz="0.10869 0.13329 0.24452" rpy="1.57078849029 -0.698132635299 2.35912486931"/>
+  </joint>
+
+  <joint name="base_to_kinect2_move_frame" type="fixed">
+    <parent link="tool_base_link"/>
+    <child link="kinect2_move_frame"/>
+    <origin xyz="0.10869 0.13329 0.24452" rpy="0.698133962102 -6.85595277301e-06 0.788324521691"/>
+  </joint>
+
+</robot>

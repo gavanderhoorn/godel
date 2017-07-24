@@ -1,0 +1,70 @@
+<?xml version="1.0" ?>
+<robot name="irb4600_workspace" xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:include filename="$(find abb_irb4600_support)/urdf/irb4600_60_205_macro.xacro"/>
+
+  <xacro:include filename="$(find godel_irb4600_support)/urdf/pushcorp_macro.xacro"/>
+
+  <link name="world_frame"/>
+
+  <xacro:abb_irb4600_60_205 prefix=""/>
+
+  <!-- Todo: Tool definition -->
+  <link name="tool1"/>
+
+  <link name="pedestal">
+    <visual>
+      <geometry>
+        <mesh filename="package://godel_irb4600_support/meshes/visual/riser.dae"/>
+      </geometry>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://godel_irb4600_support/meshes/collision/riser.stl"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="table">
+    <visual>
+      <geometry>
+        <mesh filename="package://godel_irb4600_support/meshes/visual/table.dae"/>
+      </geometry>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://godel_irb4600_support/meshes/collision/table.stl"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="world_to_base_link" type="fixed">
+    <parent link="world_frame"/>
+    <child link="base_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <joint name="base_link_to_pedestal" type="fixed">
+    <parent link="base_link"/>
+    <child link="pedestal"/>
+    <origin xyz="0 0 -0.75" rpy="0 0 0"/>
+  </joint>
+
+  <joint name="base_link_to_table" type="fixed">
+    <parent link="world_frame"/>
+    <child link="table"/>
+    <origin xyz="0.75 -1.75 -0.75" rpy="0 0 0"/>
+  </joint>
+
+  <joint name="tool0_to_tool1" type="fixed">
+    <parent link="tool0"/>
+    <child link="tool1"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <joint name="tool0_to_pushcorp" type="fixed">
+    <parent link="tool0"/>
+    <child link="tool_base_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+</robot>

@@ -1,0 +1,10 @@
+moveit_setup_assistant_config:
+  URDF:
+    package: godel_irb4600_support
+    relative_path: urdf/irb4600_workspace.xacro
+  SRDF:
+    relative_path: config/irb4600_workspace.srdf
+  CONFIG:
+    author_name: Jonathan Meyer
+    author_email: Jmeyer@swri.org
+    generated_timestamp: 1500907996
