@@ -1,0 +1,1 @@
+rosrun moveit_kinematics create_ikfast_moveit_plugin.py abb_irb4600_60_205 manipulator abb_irb4600_60_205_ikfast_manipulator_plugin /home/jmeyer/ros/abb_ws/src/abb_irb4600_60_205_ikfast_manipulator_plugin/src/abb_irb4600_60_205_manipulator_ikfast_solver.cpp
