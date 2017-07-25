@@ -69,7 +69,12 @@ Eigen::Affine3d godel_process_planning::createNominalTransform(const Eigen::Affi
   Eigen::Affine3d flip_z;
   flip_z = Eigen::AngleAxisd(M_PI, Eigen::Vector3d::UnitY());
 
-  return ref_pose * Eigen::Translation3d(0, 0, z_adjust) * flip_z;
+  const static double tool_radius = 3.0 * 0.0254;
+  Eigen::Affine3d tool_offset;
+  tool_offset = Eigen::AngleAxisd(-0.1, Eigen::Vector3d::UnitY()) * Eigen::Translation3d(tool_radius, 0, 0);
+
+
+  return ref_pose * Eigen::Translation3d(0, 0, z_adjust) * tool_offset * flip_z;
 }
 
 bool godel_process_planning::descartesSolve(const godel_process_planning::DescartesTraj& in_path,
@@ -323,7 +328,7 @@ double godel_process_planning::freeSpaceCostFunction(const std::vector<double> &
   double cost = 0.0;
   for (std::size_t i = 0; i < source.size(); ++i)
   {
-    double diff = std::abs(source[i] - target[i]);
+    double diff = std::pow(std::abs(source[i] - target[i]), 2);
     if (diff > FREE_SPACE_MAX_ANGLE_DELTA)
       cost += FREE_SPACE_ANGLE_PENALTY * diff;
     else
