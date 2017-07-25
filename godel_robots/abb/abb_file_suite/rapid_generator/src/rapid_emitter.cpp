@@ -78,8 +78,9 @@ bool rapid_emitter::emitSetOutput(std::ostream& os, const ProcessParams& params,
   {
     if (value)
     {
-      os << "GrindStart gr1;" << "\n";
-      os << "WaitTime\\InPos, RPM_REACHED;" << "\n";
+      os << "GrinderOn\\Spindle, gr1;" << "\n";
+      os << "WaitTime\\InPos, 1;\n";
+      os << "WaitDI diSPIN_AT_SPEED, 1;" << "\n";
     }
   }
   return os.good();
@@ -99,14 +100,11 @@ bool rapid_emitter::emitProcessDeclarations(std::ostream& os, const ProcessParam
   {
     os << "TASK PERS grinddata gr1:=[" << params.process_speed << ","
                                        << params.spindle_speed << ","
-                                       << params.slide_force << ",FALSE,FALSE,FALSE,0,0];\n";
+                                       << params.slide_force << ",FALSE,FALSE,-50,TRUE,TRUE,0];\n";
   }
-  else
-  {
-    emitSpeedData(os, "vApproachSpeed", params.approach_speed, 45.0);
-    emitSpeedData(os, "vProcessSpeed", params.process_speed, 45.0);
-    emitSpeedData(os, "vTraverseSpeed", params.traversal_speed, 45.0);
-  }
+  emitSpeedData(os, "vApproachSpeed", params.approach_speed, 45.0);
+  emitSpeedData(os, "vProcessSpeed", params.process_speed, 45.0);
+  emitSpeedData(os, "vTraverseSpeed", params.traversal_speed, 45.0);
 
   emitSpeedData(os, "vMotionSpeed", 200, 30);
 
@@ -165,22 +163,22 @@ static void emitProcessMotion(std::ostream& os, const std::size_t index, bool st
 {
   if (params.wolf_mode)
   {
-    if (start)
+    if (end)
     {
-      os << "GrindLStart CalcRobT(jTarget_" << index << ",tGrind), vProcessSpeed, gr1, fiindexe, tGrind;\n";
-    }
-    else if (end)
-    {
-      os << "GrindLEnd CalcRobT(jTarget_" << index << ",tGrind), vProcessSpeed, fine, tGrind";
-      if (is_last_segment)
+      os << "GrindLEnd";
+      if (!is_last_segment)
       {
-        os << "\\KeepOn:=True";
+        os << "\\LeaveOn,";
       }
-      os << ";\n";
+      os << " CalcRobT(jTarget_" << index << ",tGrind), vProcessSpeed, fine, tGrind;\n";
+    }
+    else if (start)
+    {
+      os << "GrindLStart CalcRobT(jTarget_" << index << ",tGrind), vProcessSpeed, gr1, fine, tGrind;\n";
     }
     else
     {
-      os << "GrindL CalcRobT(jTarget_" << index << ",tGrind), vProcessSpeed, z40, tGrind;\n";
+      os << "GrindL CalcRobT(jTarget_" << index << ",tGrind), vProcessSpeed, z10, tGrind;\n";
     }
   }
   else
@@ -211,6 +209,10 @@ static void emitProcessPath(std::ostream& os, const std::size_t segment_size,
                             const rapid_emitter::ProcessParams& params, const bool is_last_segment,
                             std::size_t& running_count)
 {
+  if (segment_size == 1)
+  {
+    std::cerr << "Process segment size == 1\n";
+  }
   for (std::size_t i = 0; i < segment_size; ++i)
   {
     bool start = i == 0;

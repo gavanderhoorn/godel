@@ -164,7 +164,7 @@ godel_process_execution::AbbBlendProcessService::AbbBlendProcessService(ros::Nod
   // Load Robot Specific Parameters
   nh_.param<bool>("J23_coupled", params_.j23_coupled, false);
   nh_.param<std::string>("io_name", params_.io_name, "do_PIO_8");
-  nh_.param<bool>("wolf_mode", params_.wolf_mode, false);
+  nh_.param<bool>("wolf_mode", params_.wolf_mode, true);
 
   // Create client services
   sim_client_ = nh_.serviceClient<industrial_robot_simulator_service::SimulateTrajectory>(SIMULATION_SERVICE_NAME);
