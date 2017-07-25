@@ -13,20 +13,20 @@ bool rapid_emitter::emitGrindMotion(std::ostream& os, const ProcessParams& param
   {
     if (start)
     {
-      os << "GrindLStart CalcRobT(jTarget_" << n << ",tool1), v100, gr1, fine, tool1;\n";
+      os << "GrindLStart CalcRobT(jTarget_" << n << ",tGrind), v100, gr1, fine, tGrind;\n";
     }
     else if (end)
     {
-      os << "GrindLEnd CalcRobT(jTarget_" << n << ",tool1), v100, fine, tool1;\n";
+      os << "GrindLEnd CalcRobT(jTarget_" << n << ",tGrind), v100, fine, tGrind;\n";
     }
     else
     {
-      os << "GrindL CalcRobT(jTarget_" << n << ",tool1), v100, z40, tool1;\n";
+      os << "GrindL CalcRobT(jTarget_" << n << ",tGrind), v100, z40, tGrind;\n";
     }
   }
   else
   {
-    os << "MoveL CalcRobT(jTarget_" << n << ",tool1), vProcessSpeed, z40, tool1;\n";
+    os << "MoveL CalcRobT(jTarget_" << n << ",tGrind), vProcessSpeed, z40, tGrind;\n";
   }
   return os.good();
 }
@@ -40,12 +40,12 @@ bool rapid_emitter::emitFreeMotion(std::ostream& os, const ProcessParams& params
 
   if (duration <= 0.0)
   {
-    os << "MoveAbsJ jTarget_" << n << ", vMotionSpeed," << zone << ", tool1;\n";
+    os << "MoveAbsJ jTarget_" << n << ", vMotionSpeed," << zone << ", tGrind;\n";
   }
   else
   {
     os << "MoveAbsJ jTarget_" << n << ", vMotionSpeed, \\T:=" << duration << ", "
-       << zone << ", tool1;\n";
+       << zone << ", tGrind;\n";
   }
   return os.good();
 }
@@ -149,7 +149,7 @@ bool rapid_emitter::emitJointTrajectoryFile(std::ostream& os,
 static void emitMoveMotion(std::ostream& os, const std::size_t index, const std::string& speeddata,
                            const rapid_emitter::ProcessParams& params)
 {
-  os << "MoveL CalcRobT(jTarget_" << index << ",tool1), " << speeddata << ", z40, tool1;\n";
+  os << "MoveL CalcRobT(jTarget_" << index << ",tGrind), " << speeddata << ", z40, tGrind;\n";
 }
 
 static void emitProcessMotion(std::ostream& os, const std::size_t index, bool start, bool end,
@@ -159,15 +159,15 @@ static void emitProcessMotion(std::ostream& os, const std::size_t index, bool st
   {
     if (start)
     {
-      os << "GrindLStart CalcRobT(jTarget_" << index << ",tool1), vProcessSpeed, gr1, fiindexe, tool1;\n";
+      os << "GrindLStart CalcRobT(jTarget_" << index << ",tGrind), vProcessSpeed, gr1, fiindexe, tGrind;\n";
     }
     else if (end)
     {
-      os << "GrindLEnd CalcRobT(jTarget_" << index << ",tool1), vProcessSpeed, fine, tool1;\n";
+      os << "GrindLEnd CalcRobT(jTarget_" << index << ",tGrind), vProcessSpeed, fine, tGrind;\n";
     }
     else
     {
-      os << "GrindL CalcRobT(jTarget_" << index << ",tool1), vProcessSpeed, z40, tool1;\n";
+      os << "GrindL CalcRobT(jTarget_" << index << ",tGrind), vProcessSpeed, z40, tGrind;\n";
     }
   }
   else

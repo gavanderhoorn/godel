@@ -10,9 +10,6 @@
 
   <xacro:abb_irb4600_60_205 prefix=""/>
 
-  <!-- Todo: Tool definition -->
-  <link name="tool1"/>
-
   <link name="pedestal">
     <visual>
       <geometry>
@@ -55,12 +52,6 @@
     <parent link="world_frame"/>
     <child link="table"/>
     <origin xyz="1.40197 -1.45022 -0.56537" rpy="0 0 0"/>
-  </joint>
-
-  <joint name="tool0_to_tool1" type="fixed">
-    <parent link="tool0"/>
-    <child link="tool1"/>
-    <origin xyz="0 0 0" rpy="0 0 0"/>
   </joint>
 
   <joint name="tool0_to_pushcorp" type="fixed">
