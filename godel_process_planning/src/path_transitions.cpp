@@ -107,7 +107,7 @@ godel_process_planning::generateTransitions(const std::vector<geometry_msgs::Pos
   {
     ROS_WARN("Forcing traverse height to at least 0.05m to protect against broken configurations "
              "user requested height = %f.", traverse_height);
-    traverse_height = 0.1;
+    traverse_height = 0.05;
   }
   std::vector<ConnectingPath> result;
 
@@ -122,9 +122,10 @@ godel_process_planning::generateTransitions(const std::vector<geometry_msgs::Pos
     tf::poseMsgToEigen(end_pose, e_end);
 
     // Now we want to generate our intermediate waypoints
-    auto approach = retractPath(e_start, params.retract_dist,traverse_height, params.linear_disc,
+    const auto height = i == 0 ? traverse_height * 2.0 : traverse_height;
+    auto approach = retractPath(e_start, params.retract_dist,height, params.linear_disc,
                                 params.angular_disc);
-    auto depart = retractPath(e_end, params.retract_dist, traverse_height, params.linear_disc,
+    auto depart = retractPath(e_end, params.retract_dist, height, params.linear_disc,
                               params.angular_disc);
     std::reverse(approach.begin(), approach.end()); // we flip the 'to' path to keep the time ordering of the path
 
