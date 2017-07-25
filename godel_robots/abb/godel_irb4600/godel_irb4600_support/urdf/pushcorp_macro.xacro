@@ -46,7 +46,7 @@
   <joint name="base_to_blending_tcp" type="fixed">
     <parent link="tool_base_link"/>
     <child link="tcp_frame"/>
-    <origin xyz="-0.053385 0.053384 0.527808" rpy="3.3621683182e-12 0.872664625459 2.35619448997"/>
+    <origin xyz="-0.061890167647 0.064044258542 0.54800788851" rpy="-0.00320361244442 0.880669021029 2.32406931184"/>
   </joint>
 
   <!-- Macro-Scanner Frames -->
