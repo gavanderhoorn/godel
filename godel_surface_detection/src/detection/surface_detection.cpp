@@ -27,6 +27,7 @@
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/pcl_base.h>
 #include <pcl/filters/passthrough.h>
+#include <pcl/filters/statistical_outlier_removal.h>
 
 namespace godel_surface_detection
 {
@@ -436,16 +437,20 @@ namespace godel_surface_detection
     {
       pcl::PointCloud<pcl::PointXYZRGB>::Ptr intermediate_cloud_ptr(new pcl::PointCloud<pcl::PointXYZRGB>);
 
+      ros::NodeHandle nh;
+
       //remove the table using the passthrough filter
       pcl::PassThrough<pcl::PointXYZRGB> pass;
       pass.setInputCloud(full_cloud_ptr_);
       const std::string FILTER_DIRECTION = "z";
       pass.setFilterFieldName (FILTER_DIRECTION);
       //keep poin clouds with these limits
+      double min_distance = nh.param<double>("/wolf_min_distance", 0.193);
+      ROS_INFO_STREAM("WOLF MIN DISTANCE = " << min_distance);
       const double MINIMUM_DISTANCE = 0.193; // Note that the table at Wolf is at this nominal height
                                              // relative to the base frame of the robot itself
       const double MAXIMUM_DISTANCE = 2.0;
-      pass.setFilterLimits (MINIMUM_DISTANCE, MAXIMUM_DISTANCE);
+      pass.setFilterLimits (min_distance, MAXIMUM_DISTANCE);
       pass.filter (*intermediate_cloud_ptr);
 
       //downsample the full cloud using the voxelgrid filter method
@@ -455,6 +460,13 @@ namespace godel_surface_detection
                        INPUT_CLOUD_VOXEL_FILTER_SIZE,
                        INPUT_CLOUD_VOXEL_FILTER_SIZE);
       vox.filter(*process_cloud_ptr_);
+
+      pcl::StatisticalOutlierRemoval<pcl::PointXYZRGB> sor;
+      sor.setInputCloud (process_cloud_ptr_);
+      sor.setMeanK (15);
+      sor.setStddevMulThresh(2.0);
+      sor.filter (*process_cloud_ptr_);
+
     }
   } /* end namespace detection */
 } /* end namespace godel_surface_detection */

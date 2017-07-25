@@ -10,11 +10,15 @@
 #include <pcl/filters/project_inliers.h>
 #include <ros/io.h>
 #include <thread>
+#include <ros/node_handle.h>
 
 static const double DOWNSAMPLING_LEAF = 0.005f;
 static const double EDGE_SEARCH_RADIUS = 0.01;
 static const double PLANE_INLIER_DISTANCE = 0.005;
 static const double PLANE_INLIER_THRESHOLD = 0.8;
+
+static const int MAX_CLUSTER_SIZE = 50000;
+static const int MIN_CLUSTER_SIZE = 2500;
 
 
 // Custom boundary estimation
@@ -103,14 +107,24 @@ std::vector <pcl::PointIndices> SurfaceSegmentation::computeSegments(pcl::PointC
       boost::shared_ptr<pcl::search::Search<pcl::PointXYZRGB>> (new pcl::search::KdTree<pcl::PointXYZRGB>);
   pcl::RegionGrowing<pcl::PointXYZRGB, pcl::Normal> rg;
 
-  rg.setSmoothModeFlag (true); // Depends on the cloud being processed
-  rg.setSmoothnessThreshold (0.035);
-  rg.setCurvatureThreshold(1.0);
+  ros::NodeHandle nh;
+
+  bool smoothflag = nh.param<bool>("/wolf_smooth_flag", true);
+  double smoothness_thresh = nh.param<double>("/wolf_smooth_thresh", 0.035);
+  double curve_thresh = nh.param<double>("/wolf_curve_thresh", 1.0);
+  int nneighbors = nh.param<int>("/wolf_neighbors", 30);
+
+  rg.setSmoothModeFlag (smoothflag); // Depends on the cloud being processed
+  rg.setSmoothnessThreshold (smoothness_thresh);
+  rg.setCurvatureThreshold(curve_thresh);
+
+  static const int NUM_NEIGHBORS = 30;
+
 
   rg.setMaxClusterSize(MAX_CLUSTER_SIZE);
   rg.setSearchMethod (tree);
   rg.setMinClusterSize(MIN_CLUSTER_SIZE);
-  rg.setNumberOfNeighbours (NUM_NEIGHBORS);
+  rg.setNumberOfNeighbours (nneighbors);
 
   float resid_thresh = rg.getResidualThreshold();
 
@@ -640,10 +654,10 @@ void SurfaceSegmentation::computeNormals()
   ne.setInputCloud (input_cloud_);
   pcl::search::KdTree<pcl::PointXYZRGB>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZRGB> ());
   ne.setSearchMethod (tree);
-  ne.setRadiusSearch(0.025);
+  ne.setRadiusSearch(0.03);
 //  ne.setKSearch (100);
 
-  // Estimate the normals
+  // Estimate the nmals
   ne.compute (*normals_);
 }
 

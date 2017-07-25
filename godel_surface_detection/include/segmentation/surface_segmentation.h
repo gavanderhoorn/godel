@@ -19,10 +19,6 @@
 #include <Eigen/Geometry>
 #include <Eigen/StdVector>
 
-static const int MAX_CLUSTER_SIZE = 50000;
-static const int MIN_CLUSTER_SIZE = 2500;
-static const int NUM_NEIGHBORS = 30;
-
 
 template <bool IsManifoldT>
 struct MeshTraits
