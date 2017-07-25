@@ -71,7 +71,7 @@ Eigen::Affine3d godel_process_planning::createNominalTransform(const Eigen::Affi
 
   const static double tool_radius = 3.0 * 0.0254;
   Eigen::Affine3d tool_offset;
-  tool_offset = Eigen::AngleAxisd(-0.1, Eigen::Vector3d::UnitY()) * Eigen::Translation3d(tool_radius, 0, 0);
+  tool_offset = Eigen::AngleAxisd(-0.05, Eigen::Vector3d::UnitY()) * Eigen::Translation3d(tool_radius, 0, 0);
 
 
   return ref_pose * Eigen::Translation3d(0, 0, z_adjust) * tool_offset * flip_z;
