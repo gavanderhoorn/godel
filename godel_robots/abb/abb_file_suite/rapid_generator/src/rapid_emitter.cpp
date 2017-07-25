@@ -74,6 +74,14 @@ bool rapid_emitter::emitSetOutput(std::ostream& os, const ProcessParams& params,
     os << "WaitTime\\InPos, 0.01;\n";
     os << "SETDO " << params.output_name << ", " << value << ";\n";
   }
+  else
+  {
+    if (value)
+    {
+      os << "GrindStart gr1;" << "\n";
+      os << "WaitTime\\InPos, RPM_REACHED;" << "\n";
+    }
+  }
   return os.good();
 }
 
@@ -152,7 +160,7 @@ static void emitMoveMotion(std::ostream& os, const std::size_t index, const std:
   os << "MoveL CalcRobT(jTarget_" << index << ",tGrind), " << speeddata << ", z40, tGrind;\n";
 }
 
-static void emitProcessMotion(std::ostream& os, const std::size_t index, bool start, bool end,
+static void emitProcessMotion(std::ostream& os, const std::size_t index, bool start, bool end, bool is_last_segment,
                               const rapid_emitter::ProcessParams& params)
 {
   if (params.wolf_mode)
@@ -163,7 +171,12 @@ static void emitProcessMotion(std::ostream& os, const std::size_t index, bool st
     }
     else if (end)
     {
-      os << "GrindLEnd CalcRobT(jTarget_" << index << ",tGrind), vProcessSpeed, fine, tGrind;\n";
+      os << "GrindLEnd CalcRobT(jTarget_" << index << ",tGrind), vProcessSpeed, fine, tGrind";
+      if (is_last_segment)
+      {
+        os << "\\KeepOn:=True";
+      }
+      os << ";\n";
     }
     else
     {
@@ -195,14 +208,28 @@ static void emitTraversePath(std::ostream& os, const std::size_t segment_size,
 }
 
 static void emitProcessPath(std::ostream& os, const std::size_t segment_size,
-                            const rapid_emitter::ProcessParams& params, std::size_t& running_count)
+                            const rapid_emitter::ProcessParams& params, const bool is_last_segment,
+                            std::size_t& running_count)
 {
   for (std::size_t i = 0; i < segment_size; ++i)
   {
     bool start = i == 0;
     bool end = i == (segment_size - 1);
-    emitProcessMotion(os, running_count++, start, end, params);
+    emitProcessMotion(os, running_count++, start, end, is_last_segment, params);
   }
+}
+
+static std::pair<bool, size_t> findLastProcessIndex(const std::vector<rapid_emitter::TrajectorySegment>& segments)
+{
+  for (std::size_t i = 0; i < segments.size(); ++i)
+  {
+    const auto current_index = segments.size() - 1 - i;
+    if (segments[current_index].type == rapid_emitter::TrajectorySegment::PROCESS)
+    {
+      return {true, current_index};
+    }
+  }
+  return {false, 0};
 }
 
 bool rapid_emitter::emitRapidFile(std::ostream &os, const std::vector<rapid_emitter::TrajectoryPt> &approach,
@@ -252,12 +279,19 @@ bool rapid_emitter::emitRapidFile(std::ostream &os, const std::vector<rapid_emit
   // Turn on the tool
   emitSetOutput(os, params, 1);
 
-  for (const auto& segment : segments)
+  // Determine the index of the last 'process' segment, if there is one
+  const auto last_process_index = findLastProcessIndex(segments);
+
+  for (std::size_t i = 0; i < segments.size(); ++i)
   {
+    const auto& segment = segments[i];
+
+    const auto last_process_segment = last_process_index.first ? (i == last_process_index.second) : false;
+
     if (segment.type == TrajectorySegment::APPROACH)
       emitApproachPath(os, segment.points.size(), params, running_count);
     else if (segment.type == TrajectorySegment::PROCESS)
-      emitProcessPath(os, segment.points.size(), params, running_count);
+      emitProcessPath(os, segment.points.size(), params, last_process_segment, running_count);
     else if (segment.type == TrajectorySegment::TRAVERSE)
       emitTraversePath(os, segment.points.size(), params, running_count);
     else
