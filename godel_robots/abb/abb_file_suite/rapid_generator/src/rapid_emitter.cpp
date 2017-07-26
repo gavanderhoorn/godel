@@ -78,7 +78,7 @@ bool rapid_emitter::emitSetOutput(std::ostream& os, const ProcessParams& params,
   {
     if (value)
     {
-      os << "GrinderOn\\Spindle, gr1;" << "\n";
+      os << "GrinderOn\\Spindle\\Slide, gr1;" << "\n";
       os << "WaitTime\\InPos, 1;\n";
       os << "WaitDI diSPIN_AT_SPEED, 1;" << "\n";
     }
@@ -100,7 +100,7 @@ bool rapid_emitter::emitProcessDeclarations(std::ostream& os, const ProcessParam
   {
     os << "TASK PERS grinddata gr1:=[" << params.process_speed << ","
                                        << params.spindle_speed << ","
-                                       << params.slide_force << ",FALSE,FALSE,-50,TRUE,TRUE,0];\n";
+                                       << params.slide_force << ",FALSE,FALSE,-50,TRUE,FALSE,0];\n";
   }
   emitSpeedData(os, "vApproachSpeed", params.approach_speed, 45.0);
   emitSpeedData(os, "vProcessSpeed", params.process_speed, 45.0);
