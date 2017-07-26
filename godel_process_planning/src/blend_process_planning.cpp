@@ -120,8 +120,12 @@ bool ProcessPlanningManager::handleBlendPlanning(godel_msgs::BlendProcessPlannin
 
   PathMetaInfo meta_info;
 
+  PathModifiers modifiers;
+  modifiers.tilt_angle = 0.05; // ~ 3 degrees
+  modifiers.tool_radius = 3 * 0.0254; //req.params.tool_radius; // tool radius
+
   DescartesTraj process_points = toDescartesTraj(req.path.segments, speeds, transition_params,
-                                                 toDescartesBlendPt, &meta_info);
+                                                 toDescartesBlendPt, modifiers, &meta_info);
 
   if (generateMotionPlan(blend_model_, process_points, moveit_model_, blend_group_name_,
                          current_joints, res.plan))

@@ -33,7 +33,8 @@ Eigen::Affine3d createNominalTransform(const geometry_msgs::Pose& ref_pose,
 Eigen::Affine3d createNominalTransform(const geometry_msgs::Pose& ref_pose, const double z_adjust = 0.0);
 
 
-Eigen::Affine3d createNominalTransform(const Eigen::Affine3d& ref_pose, const double z_adjust = 0.0);
+Eigen::Affine3d createNominalTransform(const Eigen::Affine3d& ref_pose, const double z_adjust = 0.0,
+                                       const double tilt_angle = 0.0, const double tool_radius = 0.0);
 
 /**
  * @brief Given a path and robot model, this method creates a descartes planner and attempts to

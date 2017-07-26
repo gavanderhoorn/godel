@@ -86,7 +86,12 @@ bool ProcessPlanningManager::handleKeyencePlanning(godel_msgs::KeyenceProcessPla
   speeds.traverse_speed = std::max(min_speed, req.params.traverse_spd);
   speeds.process_speed = std::max(min_speed, req.params.traverse_spd);
 
-  DescartesTraj process_points = toDescartesTraj(req.path.segments, speeds, transition_params, toDescartesScanPt);
+  PathModifiers modifiers;
+  modifiers.tilt_angle = 0;
+  modifiers.tool_radius = 0;
+
+  DescartesTraj process_points = toDescartesTraj(req.path.segments, speeds, transition_params, toDescartesScanPt,
+                                                 modifiers);
   // Capture the current state of the robot
   std::vector<double> current_joints = getCurrentJointState(JOINT_TOPIC_NAME);
 

@@ -153,7 +153,8 @@ using DescartesConversionFunc =
 godel_process_planning::DescartesTraj
 godel_process_planning::toDescartesTraj(const std::vector<geometry_msgs::PoseArray> &segments,
                                         const ToolSpeeds& speeds, const TransitionParameters& transition_params,
-                                        DescartesConversionFunc conversion_fn, PathMetaInfo* meta)
+                                        DescartesConversionFunc conversion_fn, const PathModifiers& modifiers,
+                                        PathMetaInfo* meta)
 {
   auto transitions = generateTransitions(segments, transition_params);
 
@@ -168,7 +169,7 @@ godel_process_planning::toDescartesTraj(const std::vector<geometry_msgs::PoseArr
   auto eigen_segments = toEigenArrays(segments);
 
   // Inline function for adding a sequence of motions
-  auto add_segment = [&traj, &last_pose, &temp_meta, conversion_fn, transition_params]
+  auto add_segment = [&traj, &last_pose, &temp_meta, modifiers, conversion_fn, transition_params]
                      (const EigenSTL::vector_Affine3d& poses, const double speed, bool free_last,
                       PathMetaInfo::Type type)
   {
@@ -178,7 +179,8 @@ godel_process_planning::toDescartesTraj(const std::vector<geometry_msgs::PoseArr
     // Create Descartes trajectory for the segment path
     for (std::size_t j = 0; j < poses.size(); ++j)
     {
-      Eigen::Affine3d this_pose = createNominalTransform(poses[j], transition_params.z_adjust);
+      Eigen::Affine3d this_pose = createNominalTransform(poses[j], transition_params.z_adjust, modifiers.tilt_angle,
+                                                         modifiers.tool_radius);
       // O(1) jerky - may need to revisit this time parameterization later. This at least allows
       // Descartes to perform some optimizations in its graph serach.
       double dt = (this_pose.translation() - last_pose.translation()).norm() / speed;

@@ -31,6 +31,12 @@ struct ToolSpeeds // All (m/s)
   double approach_speed;
 };
 
+struct PathModifiers
+{
+  double tilt_angle;
+  double tool_radius;
+};
+
 struct PathMetaInfo
 {
   enum class Type
@@ -68,7 +74,7 @@ godel_process_planning::DescartesTraj
 toDescartesTraj(const std::vector<geometry_msgs::PoseArray>& segments,
                 const ToolSpeeds& speeds, const TransitionParameters& transition_params,
                 boost::function<descartes_core::TrajectoryPtPtr(const Eigen::Affine3d&, const double)> conversion_fn,
-                PathMetaInfo* meta = nullptr);
+                const PathModifiers& modifiers, PathMetaInfo* meta = nullptr);
 
 
 }
