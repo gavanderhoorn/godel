@@ -72,7 +72,8 @@ int main(int argc, char** argv)
   );
 
   // Create subscribers
-  ros::Subscriber profile_sub = nh.subscribe<pcl::PointCloud<pcl::PointXYZ>>("profiles", 0, boost::bind(scanCallback, _1, boost::ref(aggregator)));
+  ros::Subscriber profile_sub =
+      nh.subscribe<pcl::PointCloud<pcl::PointXYZ>>("profiles", 0, boost::bind(scanCallback, _1, boost::ref(aggregator)));
 
   // Create scan pub
   ros::Publisher voxel_pub = nh.advertise<pcl::PointCloud<pcl::PointXYZ>>("voxel_grid", 0);
@@ -80,7 +81,8 @@ int main(int argc, char** argv)
   // Create scan pub trigger
   ros::ServiceServer pub_trigger_service =
       nh.advertiseService<std_srvs::TriggerRequest, std_srvs::TriggerResponse>("pub_voxels",
-         [&aggregator, &voxel_pub, params, base_frame] (const std_srvs::TriggerRequest&, std_srvs::TriggerResponse) {
+         [&aggregator, &voxel_pub, params, base_frame] (const std_srvs::TriggerRequest&, std_srvs::TriggerResponse& res) {
+    ROS_INFO("Voxel save requested!");
     auto profiles = aggregator.profiles();
     auto poses = aggregator.poses();
     auto cloud = godel_scan_analysis::fuseProfiles(profiles, poses, params);
@@ -89,6 +91,8 @@ int main(int argc, char** argv)
     voxel_pub.publish(cloud);
 
     pcl::io::savePCDFile("voxels.pcd", *cloud, true);
+    res.message = "Voxels saved!";
+    res.success = true;
     return true;
   });
 
