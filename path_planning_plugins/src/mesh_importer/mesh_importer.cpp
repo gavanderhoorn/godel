@@ -149,7 +149,7 @@ bool MeshImporter::calculateSimpleBoundary(const pcl::PolygonMesh& input_mesh)
 
     // Check that plane/transform calculations are accurate by testing that transformed points lie
     // on local plane
-    if (std::abs(plane_pt(2)) > .001)
+    if (std::abs(plane_pt(2)) > .004)
     {
       ROS_ERROR_STREAM("z-value of projected/transformed point should be (near) 0 ["
                        << plane_pt.transpose() << "]");
