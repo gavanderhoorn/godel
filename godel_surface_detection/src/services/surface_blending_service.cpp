@@ -150,7 +150,8 @@ bool SurfaceBlendingService::init()
 
   // Configure QA server parameters
   cat_laser_scan_qa::TorchCutQAParameters qa_params;
-  qa_params.surface_tolerance = 0.0005; // 0.5 mm
+  qa_params.surface_tolerance = 0.002;
+  qa_params.plane_fit_ratio = 3.5;
   qa_server_.setParams(qa_params);
 
   // start server
