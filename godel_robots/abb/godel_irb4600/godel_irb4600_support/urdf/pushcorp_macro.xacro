@@ -31,15 +31,23 @@
 
   <!-- Laser scanner joints -->
   <joint name="base_to_keyence_optical_frame" type="fixed">
-    <parent link="tool_base_link"/>
+    <parent link="keyence_optical_base"/>
     <child link="keyence_sensor_optical_frame"/>
-    <origin xyz="0.339156 0.384732 0.360953" rpy="-1.5615373368 0.882160345204 2.37121479211"/>
+    <origin xyz="0 0 0" rpy="0 0.015 0"/>
   </joint>
 
   <joint name="base_to_keyence_tcp_frame" type="fixed">
     <parent link="tool_base_link"/>
     <child link="keyence_tcp_frame"/>
     <origin xyz="0.339156 0.384732 0.360953" rpy="1.58005531679 0.882160345204 2.37121479211"/>
+  </joint>
+
+  <link name="keyence_optical_base"/>
+
+  <joint name="base_to_keyence_optical_base" type="fixed">
+    <parent link="tool_base_link"/>
+    <child link="keyence_optical_base"/>
+    <origin xyz="0.339156 0.384732 0.360953" rpy="-1.5615373368 0.882160345204 2.37121479211"/>
   </joint>
 
   <!-- Blending Frame -->
