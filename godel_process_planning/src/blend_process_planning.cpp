@@ -121,8 +121,8 @@ bool ProcessPlanningManager::handleBlendPlanning(godel_msgs::BlendProcessPlannin
   PathMetaInfo meta_info;
 
   PathModifiers modifiers;
-  modifiers.tilt_angle = 0.05; // ~ 3 degrees
-  modifiers.tool_radius = 3 * 0.0254; //req.params.tool_radius; // tool radius
+  modifiers.tilt_angle = req.params.tilt ? 0.05 : 0.0; // ~ 3 degrees
+  modifiers.tool_radius = req.params.tilt ? 3 * 0.0254 : 0.0; //req.params.tool_radius; // tool radius
 
   DescartesTraj process_points = toDescartesTraj(req.path.segments, speeds, transition_params,
                                                  toDescartesBlendPt, modifiers, &meta_info);

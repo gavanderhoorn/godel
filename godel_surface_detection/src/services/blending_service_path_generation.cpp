@@ -574,6 +574,7 @@ SurfaceBlendingService::generateProcessPlan(const std::string& name,
     godel_msgs::BlendProcessPlanning srv;
     srv.request.path.segments = poses;
     srv.request.params = params;
+    srv.request.params.tilt = true;
 
     success = blend_planning_client_.call(srv);
     process_plan = srv.response.plan;
@@ -583,6 +584,7 @@ SurfaceBlendingService::generateProcessPlan(const std::string& name,
     godel_msgs::BlendProcessPlanning srv;
     srv.request.path.segments = poses;
     srv.request.params = params;
+    srv.request.params.tilt = false;
 
     success = blend_planning_client_.call(srv);
     process_plan = srv.response.plan;
