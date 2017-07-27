@@ -1,7 +1,7 @@
 frame_id: world_frame
 point_cloud_descriptions:
-  - x: 1.7
-    y: 0.2
+  - x: 2.5
+    y: -0.4
     z: 0.36
     rx: 0.0
     ry: 0.0
@@ -10,9 +10,9 @@ point_cloud_descriptions:
     w: 0.19
     h: 0.0
     resolution: 0.001
-  - x: 1.6
-    y: -0.4
-    z: 0.2
+  - x: 2.0
+    y: -0.7
+    z: 0.15
     rx: 0.0
     ry: 0.0
     rz: 0.0
@@ -20,13 +20,13 @@ point_cloud_descriptions:
     w: 0.1
     h: 0.0
     resolution: 0.001
-  - x: 1.8
-    y: -0.5
-    z: 0.3
+  - x: 1.9
+    y: -0.6
+    z: 0.25
     rx: 0.0
     ry: 0.0
-    rz: 0.0
+    rz: 0.1
     l: 0.2
-    w: 0.2
+    w: 0.5
     h: 0.0
     resolution: 0.001

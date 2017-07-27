@@ -60,4 +60,20 @@
     <origin xyz="0 0 0" rpy="0 0 0"/>
   </joint>
 
+  <link name="no_go_zone">
+    <collision>
+      <origin xyz="0.4 0.75 0.05"/>
+      <geometry>
+        <box size="0.8 1.5 0.1"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="table_to_no_go_zone" type="fixed">
+    <parent link="table"/>
+    <child link="no_go_zone"/>
+    <origin xyz="0 0 0.728" rpy="0 0 0"/>
+  </joint>
+
+
 </robot>

@@ -62,4 +62,19 @@
     <origin xyz="0.10869 0.13329 0.24452" rpy="0.698133962102 -6.85595277301e-06 0.788324521691"/>
   </joint>
 
+  <!-- Special frame for collision avoidance -->
+  <link name="tcp_model">
+    <collision>
+      <geometry>
+        <mesh filename="package://godel_irb4600_support/meshes/collision/tcp.stl"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="tcp_frame_to_model" type="fixed">
+    <parent link="tcp_frame"/>
+    <child link="tcp_model"/>
+    <origin xyz="0 0 0"/>
+  </joint>
+
 </robot>
