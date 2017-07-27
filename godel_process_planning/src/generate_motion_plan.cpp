@@ -37,6 +37,11 @@ const static bool validateTrajectory(const trajectory_msgs::JointTrajectory& pts
   return true;
 }
 
+static void printJoints(const std::vector<double>& joints)
+{
+  ROS_INFO("JNTS: %f %f %f %f %f %f", joints[0],joints[1],joints[2],joints[3],joints[4],joints[5]);
+}
+
 bool godel_process_planning::generateMotionPlan(const descartes_core::RobotModelPtr model,
                                                 const std::vector<descartes_core::TrajectoryPtPtr> &traj,
                                                 moveit::core::RobotModelConstPtr moveit_model,
@@ -67,6 +72,7 @@ bool godel_process_planning::generateMotionPlan(const descartes_core::RobotModel
   for (std::size_t i = 0; i < n_start_poses; ++i) // This builds a list of starting poses
   {
     std::vector<double> sol (&joint_data[i * dof], &joint_data[i*dof + dof]);
+//    printJoints(sol);
     process_start_poses.push_back(sol);
   }
 

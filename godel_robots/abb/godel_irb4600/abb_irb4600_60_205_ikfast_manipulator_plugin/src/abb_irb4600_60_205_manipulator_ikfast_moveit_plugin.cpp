@@ -998,7 +998,7 @@ bool IKFastKinematicsPlugin::getPositionIK(const geometry_msgs::Pose& ik_pose, c
                                            std::vector<double>& solution, moveit_msgs::MoveItErrorCodes& error_code,
                                            const kinematics::KinematicsQueryOptions& options) const
 {
-  ROS_DEBUG_STREAM_NAMED("ikfast", "getPositionIK");
+  ROS_INFO_STREAM_NAMED("ikfast", "getPositionIK");
 
   if (!active_)
   {
@@ -1032,20 +1032,20 @@ bool IKFastKinematicsPlugin::getPositionIK(const geometry_msgs::Pose& ik_pose, c
                       sol[5]);
 
       bool obeys_limits = true;
-      for (unsigned int i = 0; i < sol.size(); i++)
-      {
-        // Add tolerance to limit check
-        if (joint_has_limits_vector_[i] && ((sol[i] < (joint_min_vector_[i] - LIMIT_TOLERANCE)) ||
-                                            (sol[i] > (joint_max_vector_[i] + LIMIT_TOLERANCE))))
-        {
-          // One element of solution is not within limits
-          obeys_limits = false;
-          ROS_DEBUG_STREAM_NAMED("ikfast", "Not in limits! " << i << " value " << sol[i] << " has limit: "
-                                                             << joint_has_limits_vector_[i] << "  being  "
-                                                             << joint_min_vector_[i] << " to " << joint_max_vector_[i]);
-          break;
-        }
-      }
+//      for (unsigned int i = 0; i < sol.size(); i++)
+//      {
+//        // Add tolerance to limit check
+//        if (joint_has_limits_vector_[i] && ((sol[i] < (joint_min_vector_[i] - LIMIT_TOLERANCE)) ||
+//                                            (sol[i] > (joint_max_vector_[i] + LIMIT_TOLERANCE))))
+//        {
+//          // One element of solution is not within limits
+//          obeys_limits = false;
+//          ROS_DEBUG_STREAM_NAMED("ikfast", "Not in limits! " << i << " value " << sol[i] << " has limit: "
+//                                                             << joint_has_limits_vector_[i] << "  being  "
+//                                                             << joint_min_vector_[i] << " to " << joint_max_vector_[i]);
+//          break;
+//        }
+//      }
       if (obeys_limits)
       {
         // All elements of solution obey limits
@@ -1062,6 +1062,11 @@ bool IKFastKinematicsPlugin::getPositionIK(const geometry_msgs::Pose& ik_pose, c
 
   error_code.val = moveit_msgs::MoveItErrorCodes::NO_IK_SOLUTION;
   return false;
+}
+
+static void printJoints(const std::vector<double>& joints)
+{
+  ROS_INFO("JNTS: %f %f %f %f %f %f", joints[0],joints[1],joints[2],joints[3],joints[4],joints[5]);
 }
 
 bool IKFastKinematicsPlugin::getPositionIK(const std::vector<geometry_msgs::Pose>& ik_poses,
@@ -1152,7 +1157,7 @@ bool IKFastKinematicsPlugin::getPositionIK(const std::vector<geometry_msgs::Pose
     solution_set.push_back(ik_solutions);
   }
 
-  ROS_DEBUG_STREAM_NAMED("ikfast", "Found " << numsol << " solutions from IKFast");
+//  ROS_ERROR_STREAM_NAMED("ikfast", "Found " << numsol << " solutions from IKFast");
   bool solutions_found = false;
   if (numsol > 0)
   {
@@ -1169,20 +1174,7 @@ bool IKFastKinematicsPlugin::getPositionIK(const std::vector<geometry_msgs::Pose
         getSolution(ik_solutions, s, sol);
 
         bool obeys_limits = true;
-        for (unsigned int i = 0; i < sol.size(); i++)
-        {
-          // Add tolerance to limit check
-          if (joint_has_limits_vector_[i] && ((sol[i] < (joint_min_vector_[i] - LIMIT_TOLERANCE)) ||
-                                              (sol[i] > (joint_max_vector_[i] + LIMIT_TOLERANCE))))
-          {
-            // One element of solution is not within limits
-            obeys_limits = false;
-            ROS_DEBUG_STREAM_NAMED(
-                "ikfast", "Not in limits! " << i << " value " << sol[i] << " has limit: " << joint_has_limits_vector_[i]
-                                            << "  being  " << joint_min_vector_[i] << " to " << joint_max_vector_[i]);
-            break;
-          }
-        }
+//        printJoints(sol);
         if (obeys_limits)
         {
           // All elements of solution obey limits
