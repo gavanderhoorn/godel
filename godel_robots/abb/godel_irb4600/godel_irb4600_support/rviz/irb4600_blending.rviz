@@ -1,6 +1,4 @@
 Panels:
-  - Class: godel_simple_gui/BlendingPanel
-    Name: BlendingPanel
   - Class: rviz/Displays
     Help Height: 78
     Name: Displays
@@ -8,7 +6,7 @@ Panels:
       Expanded:
         - /Tool Path Preview1
       Splitter Ratio: 0.5
-    Tree Height: 509
+    Tree Height: 337
   - Class: godel_plugins/RobotBlendingPanel
     Name: RobotBlendingPanel
     TextEntry: test_field
@@ -89,38 +87,10 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        blending_tool:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        chuck_tip_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        eff_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        ensenso:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
         ensenso_sensor_optical_frame:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        gripper_body:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        keyence:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
         keyence_sensor_optical_frame:
           Alpha: 1
           Show Axes: false
@@ -163,14 +133,39 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        no_go_zone:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pedestal:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        table:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         tcp_frame:
           Alpha: 1
           Show Axes: false
           Show Trail: false
+        tcp_model:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         tool0:
           Alpha: 1
           Show Axes: false
           Show Trail: false
+        tool_base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         world_frame:
           Alpha: 1
           Show Axes: false
@@ -200,38 +195,10 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        blending_tool:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        chuck_tip_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        eff_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        ensenso:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
         ensenso_sensor_optical_frame:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        gripper_body:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        keyence:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
         keyence_sensor_optical_frame:
           Alpha: 1
           Show Axes: false
@@ -274,14 +241,39 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        no_go_zone:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pedestal:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        table:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         tcp_frame:
           Alpha: 1
           Show Axes: false
           Show Trail: false
+        tcp_model:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         tool0:
           Alpha: 1
           Show Axes: false
           Show Trail: false
+        tool_base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         world_frame:
           Alpha: 1
           Show Axes: false
@@ -430,16 +422,14 @@ Visualization Manager:
       Yaw: 5.54469919
     Saved: ~
 Window Geometry:
-  BlendingPanel:
-    collapsed: false
   Displays:
     collapsed: false
   Height: 752
   Hide Left Dock: false
   Hide Right Dock: false
-  QMainWindow State: 000000ff00000000fd00000001000000000000022b000002aafc0200000002fc00000028000002aa000000fb0100001dfa000000000100000003fb000000240052006f0062006f00740042006c0065006e00640069006e006700500061006e0065006c0100000000ffffffff000000bf00fffffffb000000100044006900730070006c0061007900730100000000ffffffff0000016a00fffffffb0000001a0042006c0065006e00640069006e006700500061006e0065006c0100000000000001ba0000009500fffffffb0000001a0042006c0065006e00640069006e006700500061006e0065006c00000004480000001600000000000000000000040f000002aa00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd00000001000000000000022b000002aafc0200000002fc00000028000002aa000002640100001dfa000000000100000003fb000000240052006f0062006f00740042006c0065006e00640069006e006700500061006e0065006c0100000000ffffffff000001fe00fffffffb000000100044006900730070006c0061007900730100000000ffffffff0000016a00fffffffb0000001a0042006c0065006e00640069006e006700500061006e0065006c0000000000000001ba0000000000000000fb0000001a0042006c0065006e00640069006e006700500061006e0065006c00000004480000001600000000000000000000040f000002aa00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   RobotBlendingPanel:
     collapsed: false
   Width: 1600
-  X: 0
+  X: 65
   Y: 28
