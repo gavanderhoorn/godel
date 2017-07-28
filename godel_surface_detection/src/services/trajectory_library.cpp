@@ -19,7 +19,7 @@ void godel_surface_detection::TrajectoryLibrary::merge(const godel_surface_detec
 {
   for (const auto& pair : other.get())
   {
-    map_.insert(pair);
+    map_[pair.first] = pair.second;
   }
 }
 
