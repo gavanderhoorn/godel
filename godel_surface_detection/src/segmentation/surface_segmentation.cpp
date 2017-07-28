@@ -110,7 +110,7 @@ std::vector <pcl::PointIndices> SurfaceSegmentation::computeSegments(pcl::PointC
   ros::NodeHandle nh;
 
   bool smoothflag = nh.param<bool>("/wolf_smooth_flag", true);
-  double smoothness_thresh = nh.param<double>("/wolf_smooth_thresh", 0.030);
+  double smoothness_thresh = nh.param<double>("/wolf_smooth_thresh", 0.020);
   double curve_thresh = nh.param<double>("/wolf_curve_thresh", 1.0);
   int nneighbors = nh.param<int>("/wolf_neighbors", 30);
 
