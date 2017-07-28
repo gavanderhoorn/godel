@@ -50,7 +50,16 @@ bool godel_path_execution::PathExecutionService::executionCallback(
         goal.trajectory.points.back().time_from_start * ACTION_EXTRA_WAIT_RATIO;
     if (ac_.waitForResult(goal.trajectory.points.back().time_from_start + extra_wait))
     {
-      return ac_.getState().state_ == ac_.getState().SUCCEEDED;
+      if (ac_.getState().state_ == ac_.getState().SUCCEEDED)
+      {
+        // The joint trajectory action sometimes returns too quickly and the robot controller
+        // doesn't have a chance to update things. This is a kludgy hack while we wait to get
+        // feedback about the state of the robot from the robot itself.
+        ros::Duration(0.5).sleep();
+        return true;
+      }
+      else
+        return false;
     }
     else
     {

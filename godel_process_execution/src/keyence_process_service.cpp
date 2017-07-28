@@ -66,6 +66,7 @@ void godel_process_execution::KeyenceProcessService::executionCallback(
       res.success = true;
     }
   }
+  process_exe_action_server_.setSucceeded(res);
 }
 
 bool godel_process_execution::KeyenceProcessService::executeProcess(
