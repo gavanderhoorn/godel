@@ -382,6 +382,12 @@ computeQAClusters(const pcl::PointCloud<pcl::PointXYZRGB>& macro_surface,
                   const pcl::PointCloud<pcl::PointXYZRGB>& laser_surface,
                   const cat_laser_scan_qa::TorchCutQAResult& qa_result)
 {
+  if (laser_surface.empty() || qa_result.high_point_indices.indices.empty())
+  {
+    ROS_WARN("No laser surface points or QA indicated no points out of range");
+    return {};
+  }
+
   // Let's extract the high points
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr high_points (new pcl::PointCloud<pcl::PointXYZRGB>());
   pcl::copyPointCloud(laser_surface, qa_result.high_point_indices.indices, *high_points);
@@ -399,7 +405,7 @@ computeQAClusters(const pcl::PointCloud<pcl::PointXYZRGB>& macro_surface,
     indices.insert(local_indices.begin(), local_indices.end());
   }
 
-  ROS_ERROR_STREAM("input cloud had " << high_points->size() << "points and after dilation we have " << indices.size());
+  ROS_INFO_STREAM("input cloud had " << high_points->size() << "points and after dilation we have " << indices.size());
 
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr dilated_cloud (new pcl::PointCloud<pcl::PointXYZRGB>());
   std::vector<int> dilated_indices;
@@ -421,13 +427,13 @@ computeQAClusters(const pcl::PointCloud<pcl::PointXYZRGB>& macro_surface,
   std::vector<pcl::PointIndices> cluster_indices;
   ec.extract(cluster_indices);
 
-  ROS_ERROR_STREAM("After clustering we have " << cluster_indices.size() << " clusters");
+  ROS_INFO_STREAM("After clustering we have " << cluster_indices.size() << " clusters");
 
   // Assemble results
   std::vector<pcl::PointCloud<pcl::PointXYZRGB>> clusters (cluster_indices.size());
   for (std::size_t i = 0; i < cluster_indices.size(); ++i)
   {
-    ROS_ERROR_STREAM("Cluster " << i << " has " << cluster_indices[i].indices.size() << " points");
+    ROS_INFO_STREAM("Cluster " << i << " has " << cluster_indices[i].indices.size() << " points");
     pcl::copyPointCloud(*dilated_cloud, cluster_indices[i].indices, clusters[i]);
   }
 
@@ -447,7 +453,7 @@ SurfaceBlendingService::generateQAMotionLibrary(const godel_msgs::BlendingPlanPa
     // For each active job...
     const int key = q.first;
     const godel_qa_server::QAJob& job = q.second;
-    ROS_ERROR_STREAM("CONSIDERING QA FOR SURFACE " << key);
+    ROS_INFO_STREAM("CONSIDERING QA FOR SURFACE " << key);
 
     // Examine the QA point cloud and pull out "patches" that need to be re-processed; each patch is a euclidean
     // cluster
@@ -465,7 +471,7 @@ SurfaceBlendingService::generateQAMotionLibrary(const godel_msgs::BlendingPlanPa
     for (std::size_t i = 0; i < clusters.size(); ++i)
     {
       auto new_id = data_coordinator_.addRecord(surface_cloud, clusters[i]);
-      ROS_ERROR_STREAM("Creating a new qa surface w/ id = " << new_id);
+      ROS_INFO_STREAM("Creating a new qa surface w/ id = " << new_id);
       const std::string new_surface_name = surface_name + "_qa" + std::to_string(i);
       data_coordinator_.setSurfaceName(new_id, new_surface_name);
 

@@ -150,8 +150,8 @@ bool SurfaceBlendingService::init()
 
   // Configure QA server parameters
   cat_laser_scan_qa::TorchCutQAParameters qa_params;
-  qa_params.surface_tolerance = 0.001;
-  qa_params.plane_fit_ratio = 6.0;
+  qa_params.surface_tolerance = 0.00075;
+  qa_params.plane_fit_ratio = 2.0;
   qa_server_.setParams(qa_params);
 
   // start server
@@ -590,18 +590,18 @@ void SurfaceBlendingService::processPlanningActionCallback(const godel_msgs::Pro
     }
     case godel_msgs::ProcessPlanningGoal::GENERATE_QA_MOTION_PLAN:
     {
-      ROS_ERROR_STREAM("QA MOTION ACTION HANDLER");
+      ROS_INFO_STREAM("QA MOTION ACTION HANDLER");
       ensenso::EnsensoGuard guard; // turns off ensenso for planning and turns it on when this goes out of scope
       process_planning_feedback_.last_completed = "Recieved request to generate motion plans from QA data";
       process_planning_server_.publishFeedback(process_planning_feedback_);
       trajectory_library_.merge(generateQAMotionLibrary(goal_in->blend_params, goal_in->scan_params));
-      ROS_ERROR_STREAM("QA PLANNING DONE");
+      ROS_INFO_STREAM("QA PLANNING DONE");
       process_planning_feedback_.last_completed = "Finished QA motion planning";
       process_planning_server_.publishFeedback(process_planning_feedback_);
       visualizePaths();
       process_planning_result_.succeeded = true;
       process_planning_server_.setSucceeded(process_planning_result_);
-      ROS_ERROR_STREAM("ALL QA DONE");
+      ROS_INFO_STREAM("ALL QA DONE");
       break;
     }
     default:
@@ -859,7 +859,7 @@ bool SurfaceBlendingService::getLaserScanDataAndSave(int surface_id)
   auto qa_job = qa_server_.lookup(surface_id);
   if (!qa_job)
   {
-    ROS_ERROR("Creating new QA job for surface %d", surface_id);
+    ROS_INFO("Creating new QA job for surface %d", surface_id);
     qa_server_.createNewJob(surface_id);
     qa_job = qa_server_.lookup(surface_id);
     ROS_ASSERT(static_cast<bool>(qa_job));
