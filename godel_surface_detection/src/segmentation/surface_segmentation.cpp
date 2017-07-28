@@ -17,7 +17,7 @@ static const double EDGE_SEARCH_RADIUS = 0.01;
 static const double PLANE_INLIER_DISTANCE = 0.005;
 static const double PLANE_INLIER_THRESHOLD = 0.8;
 
-static const int MAX_CLUSTER_SIZE = 50000;
+static const int MAX_CLUSTER_SIZE = 5000000;
 static const int MIN_CLUSTER_SIZE = 2500;
 
 
