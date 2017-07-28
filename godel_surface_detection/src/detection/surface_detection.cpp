@@ -445,10 +445,8 @@ namespace godel_surface_detection
       const std::string FILTER_DIRECTION = "z";
       pass.setFilterFieldName (FILTER_DIRECTION);
       //keep poin clouds with these limits
-      double min_distance = nh.param<double>("/wolf_min_distance", 0.193);
+      double min_distance = nh.param<double>("/wolf_min_distance", 0.24);
       ROS_INFO_STREAM("WOLF MIN DISTANCE = " << min_distance);
-      const double MINIMUM_DISTANCE = 0.193; // Note that the table at Wolf is at this nominal height
-                                             // relative to the base frame of the robot itself
       const double MAXIMUM_DISTANCE = 2.0;
       pass.setFilterLimits (min_distance, MAXIMUM_DISTANCE);
       pass.filter (*intermediate_cloud_ptr);

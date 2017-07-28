@@ -110,15 +110,13 @@ std::vector <pcl::PointIndices> SurfaceSegmentation::computeSegments(pcl::PointC
   ros::NodeHandle nh;
 
   bool smoothflag = nh.param<bool>("/wolf_smooth_flag", true);
-  double smoothness_thresh = nh.param<double>("/wolf_smooth_thresh", 0.035);
+  double smoothness_thresh = nh.param<double>("/wolf_smooth_thresh", 0.030);
   double curve_thresh = nh.param<double>("/wolf_curve_thresh", 1.0);
   int nneighbors = nh.param<int>("/wolf_neighbors", 30);
 
   rg.setSmoothModeFlag (smoothflag); // Depends on the cloud being processed
   rg.setSmoothnessThreshold (smoothness_thresh);
   rg.setCurvatureThreshold(curve_thresh);
-
-  static const int NUM_NEIGHBORS = 30;
 
 
   rg.setMaxClusterSize(MAX_CLUSTER_SIZE);
