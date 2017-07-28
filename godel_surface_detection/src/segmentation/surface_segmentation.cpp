@@ -110,7 +110,7 @@ std::vector <pcl::PointIndices> SurfaceSegmentation::computeSegments(pcl::PointC
   ros::NodeHandle nh;
 
   bool smoothflag = nh.param<bool>("/wolf_smooth_flag", true);
-  double smoothness_thresh = nh.param<double>("/wolf_smooth_thresh", 0.020);
+  double smoothness_thresh = nh.param<double>("/wolf_smooth_thresh", 0.05);
   double curve_thresh = nh.param<double>("/wolf_curve_thresh", 1.0);
   int nneighbors = nh.param<int>("/wolf_neighbors", 30);
 
@@ -125,6 +125,9 @@ std::vector <pcl::PointIndices> SurfaceSegmentation::computeSegments(pcl::PointC
   rg.setNumberOfNeighbours (nneighbors);
 
   float resid_thresh = rg.getResidualThreshold();
+  ROS_INFO_STREAM("Residual test flag: " << resid_thresh);
+
+  double resid = nh.param<double>("/wolf_resid_thresh", resid_thresh);
 
   rg.setResidualTestFlag(true);
   rg.setResidualThreshold(resid_thresh);
@@ -643,6 +646,10 @@ void SurfaceSegmentation::removeNans()
 
 void SurfaceSegmentation::computeNormals()
 {
+
+  ros::NodeHandle nh;
+  double normal_radius = nh.param<double>("/wolf_normal_radius", 0.01);
+  ROS_INFO("COMPUTE NORMALS with radius %f!", normal_radius);
   // Determine the number of available cores
   pcl::NormalEstimationOMP<pcl::PointXYZRGB, pcl::Normal> ne;
   int nr_cores = std::thread::hardware_concurrency();
@@ -652,7 +659,8 @@ void SurfaceSegmentation::computeNormals()
   ne.setInputCloud (input_cloud_);
   pcl::search::KdTree<pcl::PointXYZRGB>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZRGB> ());
   ne.setSearchMethod (tree);
-  ne.setRadiusSearch(0.03);
+  ne.setRadiusSearch(normal_radius);
+  ne.setViewPoint(0, 0, 10);
 //  ne.setKSearch (100);
 
   // Estimate the nmals
