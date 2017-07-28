@@ -21,7 +21,7 @@ const static std::string KEYENCE_PROGRAM_SERVICE_NAME = "change_program";
 const static std::string EXECUTION_SERVICE_NAME = "path_execution";
 const static std::string SIMULATION_SERVICE_NAME = "simulate_path";
 const static std::string SERVICE_SERVER_NAME = "scan_process_execution";
-const static std::string RESET_SCANS_SERVICE = "reset_scan_server";
+const static std::string RESET_SCANS_SERVICE = "reset_scans";
 const static std::string PROCESS_EXE_ACTION_SERVER_NAME = "scan_process_execution_as";
 
 godel_process_execution::KeyenceProcessService::KeyenceProcessService(ros::NodeHandle& nh) : nh_(nh),

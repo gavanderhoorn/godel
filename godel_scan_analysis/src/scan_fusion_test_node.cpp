@@ -67,6 +67,7 @@ int main(int argc, char** argv)
       nh.advertiseService<std_srvs::TriggerRequest, std_srvs::TriggerResponse>("reset_scans",
         [&aggregator] (const std_srvs::TriggerRequest&, std_srvs::TriggerResponse&) {
            aggregator.clear();
+           ROS_INFO("Scan aggregation reset.");
            return true;
         }
   );
@@ -103,7 +104,6 @@ int main(int argc, char** argv)
     res.scans = createLaserScanRecord(aggregator.profiles(), aggregator.poses());
     res.scans.header.frame_id = base_frame;
     res.scans.header.stamp = ros::Time::now();
-
     return true;
   });
 
