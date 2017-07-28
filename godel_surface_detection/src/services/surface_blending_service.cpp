@@ -150,7 +150,7 @@ bool SurfaceBlendingService::init()
 
   // Configure QA server parameters
   cat_laser_scan_qa::TorchCutQAParameters qa_params;
-  qa_params.surface_tolerance = 0.00075;
+  qa_params.surface_tolerance = 0.001;
   qa_params.plane_fit_ratio = 2.0;
   qa_server_.setParams(qa_params);
 
@@ -749,13 +749,13 @@ void SurfaceBlendingService::selectMotionPlansActionCallback(const godel_msgs::S
   ros::Duration buffer_time(PROCESS_EXE_BUFFER);
 
   // send the goal off to be executed
-  ROS_ERROR_STREAM("WAITING FOR MOTION EXEC RESULT ON " << goal_in->name);
+  ROS_INFO_STREAM("WAITING FOR MOTION EXEC RESULT ON " << goal_in->name);
   if(exe_client->waitForResult(total_time + buffer_time))
   {
     res.code = godel_msgs::SelectMotionPlanResult::SUCCESS;
     select_motion_plan_server_.setSucceeded(res);
 
-    ROS_ERROR_STREAM("GOAL SUCCESS");
+    ROS_INFO_STREAM("GOAL SUCCESS");
 
     // In the event that the execution was for a laser scan and we were successful and we did not simulate anything
     // then we want to save the laser scan data
@@ -822,12 +822,28 @@ bool SurfaceBlendingService::renameSurfaceCallback(godel_msgs::RenameSurface::Re
 
 bool SurfaceBlendingService::getLaserScanDataAndSave(int surface_id)
 {
+  ROS_INFO("Fetching laser scan data from aggregator for surface id = %d", surface_id);
   godel_msgs::GetSurfaceScansRequest req;
   godel_msgs::GetSurfaceScansResponse res;
   if (!get_laser_scans_client_.call(req, res))
   {
     ROS_ERROR("Unable to fetch laser scans from aggregation service: %s", get_laser_scans_client_.getService());
     return false;
+  }
+
+  if (res.scans.profiles.empty())
+  {
+    ROS_WARN("Aggregator service returne dno scans");
+  }
+
+  if (res.scans.poses.empty())
+  {
+    ROS_WARN("Aggregator service returned no poses");
+  }
+
+  if (res.scans.poses.size() != res.scans.profiles.size())
+  {
+    ROS_WARN("Aggregator service returned a different number of poses and scans");
   }
 
   // If we were successful, let's convert the data to a format usable by the data coordinator

@@ -382,9 +382,15 @@ computeQAClusters(const pcl::PointCloud<pcl::PointXYZRGB>& macro_surface,
                   const pcl::PointCloud<pcl::PointXYZRGB>& laser_surface,
                   const cat_laser_scan_qa::TorchCutQAResult& qa_result)
 {
-  if (laser_surface.empty() || qa_result.high_point_indices.indices.empty())
+  if (laser_surface.empty())
   {
-    ROS_WARN("No laser surface points or QA indicated no points out of range");
+    ROS_WARN("No laser surface points - Returning no QA operations");
+    return {};
+  }
+
+  if (qa_result.high_point_indices.indices.empty())
+  {
+    ROS_INFO("No high points detected in laser scan cloud - no QA to perform.");
     return {};
   }
 
