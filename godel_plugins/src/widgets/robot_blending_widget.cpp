@@ -30,6 +30,8 @@ const double RAD_TO_DEGREES = 180.0f / M_PI;
 const double DEGREES_TO_RAD = M_PI / 180.0f;
 const static std::string PROCESS_PLANNING_ACTION_SERVER_NAME = "process_planning_as";
 const static std::string SELECT_MOTION_PLAN_ACTION_SERVER_NAME = "select_motion_plan_as";
+const static std::string QA_READY_SERVER_NAME = "qa_server_ready";
+const static std::string QA_FEEDBACK_TOPIC = "qa_feedback";
 
 namespace godel_plugins
 {
@@ -69,6 +71,11 @@ void RobotBlendingWidget::init()
 
   selected_surfaces_subs_ =
       nh.subscribe(SELECTED_SURFACES_CHANGED_TOPIC, 1, &RobotBlendingWidget::selected_surface_changed_callback, this);
+
+  qa_ready_service_server_ =
+      nh.advertiseService(QA_READY_SERVER_NAME, &RobotBlendingWidget::on_qa_server_ready_callback, this);
+
+  qa_feedback_sub_ = nh.subscribe(QA_FEEDBACK_TOPIC, 100, &RobotBlendingWidget::on_qa_feedback, this);
 
   // Initialize UI
   ui_.setupUi(this);
@@ -486,7 +493,7 @@ void RobotBlendingWidget::generate_process_path_handler()
 
 void RobotBlendingWidget::generate_qa_path_handler()
 {
-  ui_.textEditFeedback->setText(QString::fromStdString("Sending QA planning request"));
+  setQAFeedbackText("Starting inspection planning...", true);
   ui_.PushButtonGeneratePaths->setEnabled(false);
   process_planning_action_client_.waitForServer();
 
@@ -540,6 +547,31 @@ void RobotBlendingWidget::setFeedbackText(QString feedback)
   ui_.textEditFeedback->moveCursor(QTextCursor::End);
 }
 
+void RobotBlendingWidget::setQAFeedbackText(QString text, bool append)
+{
+  if (append)
+  {
+    ui_.textEditQAFeedback->moveCursor(QTextCursor::End);
+    ui_.textEditQAFeedback->insertPlainText(QString::fromStdString("\n").append(text));
+    ui_.textEditQAFeedback->moveCursor(QTextCursor::End);
+  }
+  else
+  {
+    ui_.textEditQAFeedback->setText(text);
+  }
+}
+
+void RobotBlendingWidget::on_qa_feedback_ready()
+{
+  ui_.pushButtonQAPlan->setEnabled(true);
+}
+
+void RobotBlendingWidget::on_qa_feedback(const std_msgs::String::ConstPtr &msg)
+{
+  ROS_INFO_STREAM("New feedback message with payload: " << msg->data);
+  setQAFeedbackText(QString::fromStdString(msg->data), true);
+}
+
 
 void RobotBlendingWidget::update_motion_plan_list(const std::vector<std::string>& names)
 {
@@ -552,6 +584,12 @@ void RobotBlendingWidget::update_motion_plan_list(const std::vector<std::string>
   }
 }
 
+bool RobotBlendingWidget::on_qa_server_ready_callback(std_srvs::TriggerRequest &req, std_srvs::TriggerResponse &res)
+{
+  ROS_INFO("QA Data Ready - Enabling the QA plan button.");
+  on_qa_feedback_ready();
+  return true;
+}
 
 void RobotBlendingWidget::save_robot_scan_parameters()
 {
@@ -600,6 +638,11 @@ void RobotBlendingWidget::simulate_motion_plan_handler()
     select_motion_plan(name, true);
 }
 
+static bool isScanPath(const std::string& name)
+{
+  std::string::size_type it = name.find("scan");
+  return it != std::string::npos;
+}
 
 void RobotBlendingWidget::execute_motion_plan_handler()
 {
@@ -607,6 +650,12 @@ void RobotBlendingWidget::execute_motion_plan_handler()
     return;
   std::string name = ui_.ListPathResults->currentItem()->text().toStdString();
   ROS_INFO_STREAM("Selected " << name << " to be executed");
+  if (isScanPath(name))
+  {
+    ui_.pushButtonQAPlan->setEnabled(false);
+    setQAFeedbackText("Acquiring new scan data fo QA inspection", false);
+  }
+
   if (!name.empty())
     select_motion_plan(name, false);
 }

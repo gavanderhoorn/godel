@@ -66,7 +66,7 @@
        <item>
         <widget class="QTabWidget" name="TabWidgetCreateLib">
          <property name="currentIndex">
-          <number>2</number>
+          <number>0</number>
          </property>
          <widget class="QWidget" name="tab_1">
           <attribute name="title">
@@ -644,11 +644,31 @@
                    </widget>
                   </item>
                   <item>
-                   <widget class="QListWidget" name="ListPathResults"/>
+                   <widget class="QListWidget" name="ListPathResults">
+                    <property name="sizeIncrement">
+                     <size>
+                      <width>0</width>
+                      <height>3</height>
+                     </size>
+                    </property>
+                   </widget>
                   </item>
                  </layout>
                 </item>
                </layout>
+              </item>
+              <item>
+               <widget class="QTextEdit" name="textEditQAFeedback">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="readOnly">
+                 <bool>true</bool>
+                </property>
+               </widget>
               </item>
              </layout>
             </widget>

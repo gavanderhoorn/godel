@@ -9,6 +9,7 @@
 #include <segmentation/surface_segmentation.h>
 #include <eigen_conversions/eigen_msg.h>
 #include <path_planning_plugins_base/path_planning_base.h>
+#include <std_msgs/String.h>
 
 #include <pcl/segmentation/extract_clusters.h>
 #include <swri_profiler/profiler.h>
@@ -453,13 +454,14 @@ SurfaceBlendingService::generateQAMotionLibrary(const godel_msgs::BlendingPlanPa
   // Define return value library which will get populated for each surface
   godel_surface_detection::TrajectoryLibrary lib;
 
+  std::ostringstream ss;
+
   // Identify any outstanding QA 'jobs'
   for (const auto& q : qa_server_)
   {
     // For each active job...
     const int key = q.first;
     const godel_qa_server::QAJob& job = q.second;
-    ROS_INFO_STREAM("CONSIDERING QA FOR SURFACE " << key);
 
     // Examine the QA point cloud and pull out "patches" that need to be re-processed; each patch is a euclidean
     // cluster
@@ -470,6 +472,19 @@ SurfaceBlendingService::generateQAMotionLibrary(const godel_msgs::BlendingPlanPa
     data_coordinator_.getSurfaceName(key, surface_name);
 
     auto clusters = computeQAClusters(surface_cloud, laser_cloud, job.iterations().back().qa_result);
+    ss << "Surface " << q.first << " has ";
+    if (clusters.empty())
+    {
+      ss << "no out of tolerance zones!";
+    }
+    else
+    {
+      ss << clusters.size() << " out of tolerance zones. Generating motion plans.";
+    }
+
+    std_msgs::String str_msg;
+    str_msg.data = ss.str();
+    qa_feedback_pub_.publish(str_msg);
 
     // For each cluster, lets create a new record in the data coordinator whilst building a list of new surfaces
     std::vector<int> new_surface_ids;

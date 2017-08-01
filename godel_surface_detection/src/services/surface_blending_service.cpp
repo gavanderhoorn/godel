@@ -10,6 +10,8 @@
 
 // QA
 #include "godel_scan_analysis/profile_scan_fusion.h"
+#include <std_srvs/Trigger.h>
+#include <std_msgs/String.h>
 
 
 #include <godel_param_helpers/godel_param_helpers.h>
@@ -193,6 +195,13 @@ bool SurfaceBlendingService::init()
   blend_visualization_pub_ = nh_.advertise<geometry_msgs::PoseArray>(BLEND_VISUALIZATION_TOPIC, 1, true);
   edge_visualization_pub_ = nh_.advertise<geometry_msgs::PoseArray>(EDGE_VISUALIZATION_TOPIC, 1, true);
   scan_visualization_pub_ = nh_.advertise<geometry_msgs::PoseArray>(SCAN_VISUALIZATION_TOPIC, 1, true);
+
+  // QA
+  const static std::string QA_READY_SERVER_NAME = "qa_server_ready";
+  const static std::string QA_FEEDBACK_TOPIC = "qa_feedback";
+  qa_ready_client_ = nh_.serviceClient<std_srvs::Trigger>(QA_READY_SERVER_NAME);
+  qa_feedback_pub_ = nh_.advertise<std_msgs::String>(QA_FEEDBACK_TOPIC, 100);
+
 
   // action servers
   process_planning_server_.start();
@@ -828,6 +837,11 @@ bool SurfaceBlendingService::getLaserScanDataAndSave(int surface_id)
   if (!get_laser_scans_client_.call(req, res))
   {
     ROS_ERROR("Unable to fetch laser scans from aggregation service: %s", get_laser_scans_client_.getService());
+    std_srvs::Trigger srv;
+    qa_ready_client_.call(srv);
+    std_msgs::String msg;
+    msg.data = "Unable to fetch laser scans.";
+    qa_feedback_pub_.publish(msg);
     return false;
   }
 
@@ -887,6 +901,10 @@ bool SurfaceBlendingService::getLaserScanDataAndSave(int surface_id)
     ROS_ERROR("Already an active QA job under surface id = %d. Adding new QA pass.", surface_id);
     qa_job->addNewScan(*surface_cloud);
   }
+
+  // Notify ui that the laser scan is ready to be processed
+  std_srvs::Trigger srv;
+  qa_ready_client_.call(srv);
 }
 
 void SurfaceBlendingService::visualizePaths()

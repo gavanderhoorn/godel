@@ -40,6 +40,8 @@
 #include <godel_plugins/widgets/path_planning_param_window.h>
 #include <godel_plugins/widgets/scan_tool_configuration_window.h>
 #include <godel_plugins/widgets/blend_plan_config_widget.h>
+#include <std_srvs/Trigger.h>
+#include <std_msgs/String.h>
 
 // macros
 #ifndef DEG2RAD
@@ -100,6 +102,7 @@ protected:
   void request_available_motions(std::vector<std::string>& plans);
   void request_load_save_motions(const std::string& path, bool isLoad);
   void update_motion_plan_list(const std::vector<std::string>& names);
+  bool on_qa_server_ready_callback(std_srvs::TriggerRequest& req, std_srvs::TriggerResponse& res);
 
 protected Q_SLOTS:
 
@@ -141,6 +144,11 @@ protected Q_SLOTS:
 
   void setFeedbackText(QString feedback);
 
+  // QA feedback information
+  void setQAFeedbackText(QString text, bool append);
+  void on_qa_feedback_ready();
+  void on_qa_feedback(const std_msgs::String::ConstPtr& msg);
+
   // Action Client Callbacks
   void processPlanningFeedbackCallback(const godel_msgs::ProcessPlanningFeedbackConstPtr& feedback);
   void processPlanningDoneCallback(const actionlib::SimpleClientGoalState& state,
@@ -164,6 +172,8 @@ protected:
   ros::ServiceClient load_save_motion_plan_client_;
   ros::ServiceClient rename_surface_client_;
   ros::Subscriber selected_surfaces_subs_;
+  ros::ServiceServer qa_ready_service_server_;
+  ros::Subscriber qa_feedback_sub_;
   actionlib::SimpleActionClient<godel_msgs::ProcessPlanningAction> process_planning_action_client_;
   actionlib::SimpleActionClient<godel_msgs::SelectMotionPlanAction> select_motion_plan_action_client_;
 

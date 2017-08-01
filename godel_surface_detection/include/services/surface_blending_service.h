@@ -271,6 +271,8 @@ private:
 
   // QA stuff
   godel_qa_server::QAServer qa_server_;
+  ros::ServiceClient qa_ready_client_;
+  ros::Publisher qa_feedback_pub_;
 };
 
 #endif // surface blending services
