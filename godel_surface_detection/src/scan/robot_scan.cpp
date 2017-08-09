@@ -327,43 +327,6 @@ MoveGroupPtr RobotScan::get_move_group() { return move_group_ptr_; }
 bool RobotScan::create_scan_trajectory(std::vector<geometry_msgs::Pose>& scan_poses,
                                        moveit_msgs::RobotTrajectory& scan_traj)
 {
-  /*
-  // creating poses
-  tf::Transform world_to_tcp = tf::Transform::getIdentity();
-  tf::Transform world_to_cam = tf::Transform::getIdentity();
-  tf::Transform obj_to_cam_pose = tf::Transform::getIdentity();
-  tf::Transform tcp_to_cam_tf, world_to_obj_tf;
-
-  // converting pose msg to tf
-  tf::poseMsgToTF(params_.world_to_obj_pose, world_to_obj_tf);
-  tf::poseMsgToTF(params_.tcp_to_cam_pose, tcp_to_cam_tf);
-
-  geometry_msgs::Pose pose;
-  double alpha;
-  double alpha_incr = params_.num_scan_points == 1 ? 0.0 :
-      (params_.sweep_angle_end - params_.sweep_angle_start) / (params_.num_scan_points - 1);
-  double eef_step = 4 * alpha_incr * params_.cam_to_obj_xoffset;
-  double jump_threshold = 0.0f;
-
-  // relative transforms
-  tf::Transform xoffset_disp =
-      tf::Transform(tf::Quaternion::getIdentity(), tf::Vector3(params_.cam_to_obj_xoffset, 0, 0));
-  tf::Transform zoffset_disp =
-      tf::Transform(tf::Quaternion::getIdentity(), tf::Vector3(0, 0, params_.cam_to_obj_zoffset));
-  tf::Transform rot_alpha_about_z = tf::Transform::getIdentity();
-  tf::Transform rot_tilt_about_y =
-      tf::Transform(tf::Quaternion(tf::Vector3(0, 1, 0), params_.cam_tilt_angle));
-  for (int i = 0; i < params_.num_scan_points; i++)
-  {
-    alpha = params_.sweep_angle_start + alpha_incr * i;
-    rot_alpha_about_z = tf::Transform(tf::Quaternion(tf::Vector3(0, 0, 1), alpha));
-    obj_to_cam_pose = zoffset_disp * rot_alpha_about_z * xoffset_disp * rot_tilt_about_y;
-    world_to_tcp = world_to_obj_tf * obj_to_cam_pose * tcp_to_cam_tf.inverse();
-    tf::poseTFToMsg(world_to_tcp, pose);
-    scan_poses.push_back(pose);
-  }
-  */
-
   tf::Transform camera_center;
   tf::Transform table_size;
 
@@ -374,8 +337,8 @@ bool RobotScan::create_scan_trajectory(std::vector<geometry_msgs::Pose>& scan_po
   ROS_INFO_STREAM("TABLE_SIZE: " << params_.tcp_to_cam_pose);
   tf::Transform camera_orientation = tf::Transform(tf::Quaternion(tf::Vector3(0, 1, 0), M_PI / 2.0));
 
-  const static double fov_x = 0.5;
-  const static double fov_y = 0.5;
+  const static double fov_x = 0.4;
+  const static double fov_y = 0.4;
 
   int num_scans_x = std::max<int>(std::lround(std::ceil(table_size.getOrigin().x() / fov_x)), 1);
   int num_scans_y = std::max<int>(std::lround(std::ceil(table_size.getOrigin().y() / fov_y)), 1);
