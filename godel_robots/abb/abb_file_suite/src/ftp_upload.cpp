@@ -5,6 +5,8 @@
 
 #include <curl/curl.h>
 
+#include <ros/console.h>
+
 /*
  * The functions in this file are based on example software for libcurl
  * including the ftpuploadresume.c example.
@@ -136,6 +138,18 @@ static int upload(CURL* curlhandle, const char* remotepath, const char* localpat
   }
 }
 
+static bool createSentinel(const std::string& sentinel_filename)
+{
+//  std::ofstream ofh (sentinel_filename);
+  FILE* fh = fopen(sentinel_filename.c_str(), "w");
+  if (!fh)
+  {
+    return false;
+  }
+  fclose(fh);
+  return true;
+}
+
 bool abb_file_suite::uploadFile(const std::string& ftp_addr, const std::string& filepath,
                                 const std::string& user_name, const std::string& password)
 {
@@ -148,6 +162,15 @@ bool abb_file_suite::uploadFile(const std::string& ftp_addr, const std::string& 
 
   std::string user_pwd = user_name + ":" + password;
 
+  ROS_INFO("Preparing to upload robot program via FTP");
+
+  const static std::string sentinel_file = "/tmp/sentinel.mod";
+  if (!createSentinel(sentinel_file))
+  {
+    ROS_ERROR("Failed to create sentinel file");
+    return false;
+  }
+
   const char* auth_string = NULL;
   if (!user_name.empty() && !password.empty())
   {
@@ -156,6 +179,17 @@ bool abb_file_suite::uploadFile(const std::string& ftp_addr, const std::string& 
 
   bool result = upload(curlhandle, to.c_str(), filepath.c_str(), DEFAULT_TIMEOUT, DEFAULT_RETRIES,
                        auth_string);
+
+  if (result)
+  {
+    const std::string to_sentinel = "ftp://" + ftp_addr + "/sentinel.mod";
+    result = upload(curlhandle, to_sentinel.c_str(), sentinel_file.c_str(), DEFAULT_TIMEOUT, DEFAULT_RETRIES,
+                    auth_string);
+  }
+  else
+  {
+    ROS_ERROR("Unable to upload robot program. FTP failed.");
+  }
 
   curl_easy_cleanup(curlhandle);
   curl_global_cleanup();
