@@ -196,6 +196,7 @@ int RobotScan::scan(bool move_only)
     trajectory_poses.push_back(move_group_ptr_->getCurrentPose(params_.tcp_frame).pose);
     trajectory_poses.insert(trajectory_poses.begin() + 1, scan_traj_poses_.begin(),
                             scan_traj_poses_.end());
+    trajectory_poses.push_back(move_group_ptr_->getCurrentPose(params_.tcp_frame).pose);
 
     for (size_t i = 1; i < trajectory_poses.size(); i++)
     {
@@ -257,7 +258,7 @@ int RobotScan::scan(bool move_only)
         }
       }
 
-      if (!move_only)
+      if (!move_only && i != trajectory_poses.size() - 1)
       {
         // get message
         ros::Duration(1.0).sleep();
@@ -326,6 +327,7 @@ MoveGroupPtr RobotScan::get_move_group() { return move_group_ptr_; }
 bool RobotScan::create_scan_trajectory(std::vector<geometry_msgs::Pose>& scan_poses,
                                        moveit_msgs::RobotTrajectory& scan_traj)
 {
+  /*
   // creating poses
   tf::Transform world_to_tcp = tf::Transform::getIdentity();
   tf::Transform world_to_cam = tf::Transform::getIdentity();
@@ -359,6 +361,58 @@ bool RobotScan::create_scan_trajectory(std::vector<geometry_msgs::Pose>& scan_po
     world_to_tcp = world_to_obj_tf * obj_to_cam_pose * tcp_to_cam_tf.inverse();
     tf::poseTFToMsg(world_to_tcp, pose);
     scan_poses.push_back(pose);
+  }
+  */
+
+  tf::Transform camera_center;
+  tf::Transform table_size;
+
+  tf::poseMsgToTF(params_.world_to_obj_pose, camera_center);
+  tf::poseMsgToTF(params_.tcp_to_cam_pose, table_size);
+
+  ROS_INFO_STREAM("CAMERA_CENTER: " << params_.world_to_obj_pose);
+  ROS_INFO_STREAM("TABLE_SIZE: " << params_.tcp_to_cam_pose);
+  tf::Transform camera_orientation = tf::Transform(tf::Quaternion(tf::Vector3(0, 1, 0), M_PI / 2.0));
+
+  const static double fov_x = 0.5;
+  const static double fov_y = 0.5;
+
+  int num_scans_x = std::max<int>(std::lround(std::ceil(table_size.getOrigin().x() / fov_x)), 1);
+  int num_scans_y = std::max<int>(std::lround(std::ceil(table_size.getOrigin().y() / fov_y)), 1);
+
+  const double upper_x = camera_center.getOrigin().x() + table_size.getOrigin().x() / 2.0;
+  const double lower_x = camera_center.getOrigin().x() - table_size.getOrigin().x() / 2.0;
+  const double upper_y = camera_center.getOrigin().y() + table_size.getOrigin().y() / 2.0;
+  const double lower_y = camera_center.getOrigin().y() - table_size.getOrigin().y() / 2.0;
+  const double z = camera_center.getOrigin().z() + 0.5; // stand off
+
+  ROS_WARN("Num scans x,y = (%d, %d)", num_scans_x, num_scans_y);
+
+  for (int i = 0; i < num_scans_x; ++i)
+  {
+    double x;
+    if (num_scans_x == 1) x = (upper_x + lower_x) / 2.0;
+    else
+    {
+      double ds = ((upper_x - lower_x) / num_scans_x);
+      x = lower_x + ds/2.0 + ds * i;
+    }
+
+    for (int j = 0; j < num_scans_y; ++j)
+    {
+      double y;
+      if (num_scans_y == 1) y = (upper_y + lower_y) / 2.0;
+      else
+      {
+        double ds = ((upper_y - lower_y) / num_scans_y);
+        y = lower_y + ds/2.0 + ds * j;
+      }
+
+      geometry_msgs::Pose pose_msg;
+      tf::Transform cam_pose = tf::Transform(tf::Quaternion::getIdentity(), tf::Vector3(x,y,z)) * camera_orientation;
+      tf::poseTFToMsg(cam_pose, pose_msg);
+      scan_poses.push_back(pose_msg);
+    }
   }
 
   move_group_ptr_->setEndEffectorLink(params_.tcp_frame);
