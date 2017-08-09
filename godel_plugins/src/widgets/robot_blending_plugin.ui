@@ -194,7 +194,7 @@
                          </size>
                         </property>
                         <property name="text">
-                         <string>Sweep Angle Start</string>
+                         <string>Part X (m)</string>
                         </property>
                        </widget>
                       </item>
@@ -237,7 +237,7 @@
                          </size>
                         </property>
                         <property name="text">
-                         <string>SweepAngleEnd</string>
+                         <string>Part Y (m)</string>
                         </property>
                        </widget>
                       </item>

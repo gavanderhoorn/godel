@@ -261,8 +261,10 @@ void RobotBlendingWidget::robot_scan_params_changed_handler()
   ui_.LineEditSensorTopic->setText(QString::fromStdString(robot_scan_parameters_.scan_topic));
   ui_.SpinBoxNumScans->setValue(static_cast<int>(robot_scan_parameters_.num_scan_points));
   ui_.LineEditCamTilt->setText(QString::number(RAD_TO_DEGREES * robot_scan_parameters_.cam_tilt_angle));
-  ui_.LineEditSweepAngleStart->setText(QString::number(RAD_TO_DEGREES * robot_scan_parameters_.sweep_angle_start));
-  ui_.LineEditSweepAngleEnd->setText(QString::number(RAD_TO_DEGREES * robot_scan_parameters_.sweep_angle_end));
+  // Part X
+  ui_.LineEditSweepAngleStart->setText(QString::number(robot_scan_parameters_.tcp_to_cam_pose.position.x));
+  // Part Y
+  ui_.LineEditSweepAngleEnd->setText(QString::number(robot_scan_parameters_.tcp_to_cam_pose.position.y));
 
   // request publish scan path
   godel_msgs::SurfaceDetection msg;
@@ -595,10 +597,10 @@ void RobotBlendingWidget::save_robot_scan_parameters()
 {
   robot_scan_parameters_.num_scan_points = ui_.SpinBoxNumScans->value();
   robot_scan_parameters_.cam_tilt_angle = ui_.LineEditCamTilt->text().toDouble() * DEGREES_TO_RAD;
-  robot_scan_parameters_.sweep_angle_start =
-      ui_.LineEditSweepAngleStart->text().toDouble() * DEGREES_TO_RAD;
-  robot_scan_parameters_.sweep_angle_end =
-      ui_.LineEditSweepAngleEnd->text().toDouble() * DEGREES_TO_RAD;
+  robot_scan_parameters_.tcp_to_cam_pose.position.x =
+      ui_.LineEditSweepAngleStart->text().toDouble();
+  robot_scan_parameters_.tcp_to_cam_pose.position.y =
+      ui_.LineEditSweepAngleEnd->text().toDouble();
   robot_scan_parameters_.scan_topic = ui_.LineEditSensorTopic->text().toStdString();
 }
 

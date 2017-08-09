@@ -5,8 +5,8 @@ string world_frame
 string tcp_frame
 
 # trajectory generation
-geometry_msgs/Pose tcp_to_cam_pose
-geometry_msgs/Pose world_to_obj_pose
+geometry_msgs/Pose tcp_to_cam_pose # part dimensions
+geometry_msgs/Pose world_to_obj_pose # scan center position
 float64 cam_to_obj_zoffset
 float64 cam_to_obj_xoffset
 float64 cam_tilt_angle # rotation about relative object's y axis (radians)

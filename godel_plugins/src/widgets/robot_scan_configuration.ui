@@ -58,7 +58,7 @@
      </font>
     </property>
     <property name="text">
-     <string>World to Object Pose</string>
+     <string>Camera Center Point</string>
     </property>
    </widget>
    <widget class="QFrame" name="frame_2">
@@ -102,7 +102,7 @@
      </font>
     </property>
     <property name="text">
-     <string>Tcp to Cam Pose</string>
+     <string>Part Scan Dimensions</string>
     </property>
    </widget>
    <widget class="QFrame" name="frame_3">
