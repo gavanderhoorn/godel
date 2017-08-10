@@ -383,6 +383,7 @@ computeQAClusters(const pcl::PointCloud<pcl::PointXYZRGB>& macro_surface,
                   const pcl::PointCloud<pcl::PointXYZRGB>& laser_surface,
                   const cat_laser_scan_qa::TorchCutQAResult& qa_result)
 {
+  ROS_INFO("Computing QA clusters");
   if (laser_surface.empty())
   {
     ROS_WARN("No laser surface points - Returning no QA operations");
@@ -394,18 +395,58 @@ computeQAClusters(const pcl::PointCloud<pcl::PointXYZRGB>& macro_surface,
     ROS_INFO("No high points detected in laser scan cloud - no QA to perform.");
     return {};
   }
+  ROS_WARN_STREAM("Size of high points = " << qa_result.high_point_indices.indices.size());
+
 
   // Let's extract the high points
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr high_points (new pcl::PointCloud<pcl::PointXYZRGB>());
   pcl::copyPointCloud(laser_surface, qa_result.high_point_indices.indices, *high_points);
+
+  ROS_WARN_STREAM("HP= " << high_points->size());
+
+  if (high_points->empty())
+  {
+    ROS_ERROR("Something wrong in compute QA clusters");
+    return {};
+  }
+
+  // We want to cluster the out of tolerance regions ahead of time...
+  pcl::search::KdTree<pcl::PointXYZRGB>::Ptr oot_tree (new pcl::search::KdTree<pcl::PointXYZRGB>);
+  oot_tree->setInputCloud(high_points);
+
+  pcl::EuclideanClusterExtraction<pcl::PointXYZRGB> oot_ec;
+  oot_ec.setClusterTolerance(0.002);
+  oot_ec.setMinClusterSize(3);
+  oot_ec.setSearchMethod(oot_tree);
+  oot_ec.setInputCloud(high_points);
+  std::vector<pcl::PointIndices> oot_indices;
+  oot_ec.extract(oot_indices);
+
+  std::size_t total_size = 0;
+  for (const auto& cluster : oot_indices)
+  {
+    total_size += cluster.indices.size();
+  }
+
+  if (total_size == 0)
+  {
+    ROS_INFO("After filtering, no out of tolerance high points remain");
+    return {};
+  }
+  else
+  {
+    ROS_INFO("After filtering, %lu high points remain", total_size);
+  }
 
   // 'Dilate' the points by finding neighbors of the high points
   pcl::search::KdTree<pcl::PointXYZRGB>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZRGB>);
   tree->setInputCloud(macro_surface.makeShared());
 
   std::set<int> indices;
-  for (const auto& pt : *high_points)
+  for (const auto& oot_cluster : oot_indices)
+  for (const auto& idx : oot_cluster.indices)
   {
+    const auto& pt = (*high_points)[idx];
     std::vector<int> local_indices;
     std::vector<float> distances;
     tree->radiusSearch(pt, 0.01, local_indices, distances);

@@ -1,6 +1,7 @@
 #include "godel_scan_analysis/profile_scan_fusion.h"
 #include <pcl_ros/transforms.h>
 #include <pcl/filters/voxel_grid.h>
+#include <pcl/filters/statistical_outlier_removal.h>
 
 pcl::PointCloud<pcl::PointXYZ>::Ptr
 godel_scan_analysis::fuseProfiles(const std::vector<pcl::PointCloud<pcl::PointXYZ> > &profiles,
@@ -33,7 +34,13 @@ godel_scan_analysis::fuseProfiles(const std::vector<pcl::PointCloud<pcl::PointXY
   vg.setLeafSize(params.voxel_leaf_size, params.voxel_leaf_size, params.voxel_leaf_size);
   vg.setMinimumPointsNumberPerVoxel(params.min_points_per_voxel);
   vg.filter(*final_cloud);
+
   // TODO: Other forms of filtering? E.g. minimum samples in a voxel, statistical outlier removal, etc...
+  pcl::StatisticalOutlierRemoval<pcl::PointXYZ> sor;
+  sor.setInputCloud (final_cloud);
+  sor.setMeanK(4);
+  sor.setStddevMulThresh(0.5);
+  sor.filter (*final_cloud);
 
   return final_cloud;
 }
