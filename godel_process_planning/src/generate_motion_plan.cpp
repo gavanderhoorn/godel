@@ -50,7 +50,7 @@ bool godel_process_planning::generateMotionPlan(const descartes_core::RobotModel
                                                 godel_msgs::ProcessPlan &plan)
 {
 
-  model->setCheckTCPCollisions(false);
+  //model->setCheckTCPCollisions(false);
   // Generate a graph of the process path joint solutions
   descartes_planner::PlanningGraph planning_graph (model);
   if (!planning_graph.insertGraph(traj)) // builds the graph out
@@ -58,7 +58,7 @@ bool godel_process_planning::generateMotionPlan(const descartes_core::RobotModel
     ROS_ERROR("%s: Failed to build graph. One or more points may have no valid IK solutions", __FUNCTION__);
     return false;
   }
-  model->setCheckTCPCollisions(true);
+  //model->setCheckTCPCollisions(true);
 
   // Using the valid starting configurations, let's compute an estimate
   // of the cost to move to these configurations from our starting pose
