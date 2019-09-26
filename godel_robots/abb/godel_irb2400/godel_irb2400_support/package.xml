@@ -13,5 +13,6 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <exec_depend>godel_surface_detection</exec_depend>
+  <exec_depend>abb_irb2400_support</exec_depend>
 
 </package>
