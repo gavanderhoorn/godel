@@ -836,7 +836,7 @@ bool SurfaceBlendingService::getLaserScanDataAndSave(int surface_id)
   godel_msgs::GetSurfaceScansResponse res;
   if (!get_laser_scans_client_.call(req, res))
   {
-    ROS_ERROR("Unable to fetch laser scans from aggregation service: %s", get_laser_scans_client_.getService());
+    ROS_ERROR("Unable to fetch laser scans from aggregation service: %s", get_laser_scans_client_.getService().c_str());
     std_srvs::Trigger srv;
     qa_ready_client_.call(srv);
     std_msgs::String msg;
